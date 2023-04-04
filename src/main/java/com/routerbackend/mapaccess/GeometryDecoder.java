@@ -36,8 +36,8 @@ public final class GeometryDecoder {
     OsmTransferNode lastTransferNode = null;
     OsmNode startnode = reverseLink ? targetNode : sourceNode;
     r.reset(geometry);
-    int olon = startnode.ilon;
-    int olat = startnode.ilat;
+    int olon = startnode.longitude;
+    int olat = startnode.latitude;
     int oselev = startnode.selev;
     int idx = 0;
     while (r.hasMoreData()) {

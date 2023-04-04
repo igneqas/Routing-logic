@@ -522,10 +522,10 @@ public class RoutingEngine extends Thread {
 
           int lon0 = tt.nodes.get(ourSize - 2).getILon();
           int lat0 = tt.nodes.get(ourSize - 2).getILat();
-          int lon1 = startWp.crosspoint.ilon;
-          int lat1 = startWp.crosspoint.ilat;
-          int lon2 = node.ilon;
-          int lat2 = node.ilat;
+          int lon1 = startWp.crosspoint.longitude;
+          int lat1 = startWp.crosspoint.latitude;
+          int lon2 = node.longitude;
+          int lat2 = node.latitude;
           double angle3 = routingContext.anglemeter.calcAngle(lon0, lat0, lon1, lat1, lon2, lat2);
           int dist = node.calcDistance(startWp.crosspoint);
           if (dist < routingContext.waypointCatchingRange)
@@ -930,7 +930,7 @@ public class RoutingEngine extends Thread {
 //    if (hasInfo() && nodesCache != null) {
 //      logInfo("NodesCache status before reset=" + nodesCache.formatStatus());
 //    }
-    long maxmem = routingContext.memoryclass * 1024L * 1024L; // in MB
+    long maxmem = routingContext.memoryClass * 1024L * 1024L; // in MB
 
     nodesCache = new NodesCache(segmentDir, routingContext.expctxWay, routingContext.forceSecondaryData, maxmem, nodesCache, detailed);
     islandNodePairs.clearTempPairs();
@@ -1509,8 +1509,8 @@ public class RoutingEngine extends Thread {
         OsmPath p = (OsmPath) extract[i];
         extract[i] = null;
         OsmNode n = p.getTargetNode();
-        res[j++] = n.ilon;
-        res[j++] = n.ilat;
+        res[j++] = n.longitude;
+        res[j++] = n.latitude;
       }
       return res;
     }

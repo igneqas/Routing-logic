@@ -222,8 +222,8 @@ public final class OsmNodesMap {
    * @return the node for the given id if exist, else null
    */
   public OsmNode get(int ilon, int ilat) {
-    testKey.ilon = ilon;
-    testKey.ilat = ilat;
+    testKey.longitude = ilon;
+    testKey.latitude = ilat;
     return hmap.get(testKey);
   }
 

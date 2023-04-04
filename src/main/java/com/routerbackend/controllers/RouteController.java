@@ -19,17 +19,18 @@ public class RouteController {
 
     @GetMapping(value = "/route")
     @CrossOrigin(origins = "http://localhost:3000")
-    public ResponseEntity<String> getRoute (@RequestParam(value="profile", required = false) String profile, @RequestParam(value="lonlats", required = false) String lonlats, @RequestParam(value="nogos", required = false) String nogos, @RequestParam(value="format", required = false) String format, @RequestParam(value = "alternativeidx", required = false) String alternativeIdx) {
+    public ResponseEntity<String> getRoute (@RequestParam(value="profile", required = false) String profile, @RequestParam(value="lonlats", required = false) String lonlats, @RequestParam(value="nogos", required = false) String noGos, @RequestParam(value="format", required = false) String format, @RequestParam(value = "alternativeidx", required = false) String alternativeIdx) {
         if(profile == null || profile.isEmpty())
             return new ResponseEntity<>("Provide a profile.", HttpStatus.BAD_REQUEST);
         if(lonlats == null || lonlats.isEmpty())
             return new ResponseEntity<>("Provide a lonlats.", HttpStatus.BAD_REQUEST);
         if(format == null || format.isEmpty())
             return new ResponseEntity<>("Provide format.", HttpStatus.BAD_REQUEST);
+
         IRequestHandler handler = new RequestHandler();
-        RoutingContext rc = handler.readRoutingContext(profile, nogos, alternativeIdx);
+        RoutingContext routingContext = handler.readRoutingContext(profile, noGos, alternativeIdx);
         List<OsmNodeNamed> wplist = handler.readWayPointList(lonlats);
-        routingEngine = new RoutingEngine(wplist, rc);
+        routingEngine = new RoutingEngine(wplist, routingContext);
         routingEngine.quite = true;
         routingEngine.doRun();
         if (routingEngine.getErrorMessage() != null) {

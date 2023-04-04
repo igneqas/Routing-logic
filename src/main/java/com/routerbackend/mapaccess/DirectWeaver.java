@@ -54,8 +54,8 @@ public final class DirectWeaver extends ByteDataWriter {
     for (int n = 0; n < size; n++) // loop over nodes
     {
       OsmNode node = nodes[n];
-      int ilon = node.ilon;
-      int ilat = node.ilat;
+      int ilon = node.longitude;
+      int ilat = node.latitude;
 
       // future escapes (turn restrictions?)
       short trExceptions = 0;
@@ -98,8 +98,8 @@ public final class DirectWeaver extends ByteDataWriter {
         boolean isReverse = false;
         if (nodeIdx != n) // internal (forward-) link
         {
-          dlon_remaining = nodes[nodeIdx].ilon - ilon;
-          dlat_remaining = nodes[nodeIdx].ilat - ilat;
+          dlon_remaining = nodes[nodeIdx].longitude - ilon;
+          dlat_remaining = nodes[nodeIdx].latitude - ilat;
         } else {
           isReverse = bc.decodeBit();
           dlon_remaining = extLonDiff.decodeSignedValue();

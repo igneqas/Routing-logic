@@ -237,8 +237,8 @@ public final class OsmTrack {
         try {
           DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(f)));
           MatchedWaypoint ep = MatchedWaypoint.readFromStream(dis);
-          int dlon = ep.waypoint.ilon - newEp.ilon;
-          int dlat = ep.waypoint.ilat - newEp.ilat;
+          int dlon = ep.waypoint.longitude - newEp.longitude;
+          int dlat = ep.waypoint.latitude - newEp.latitude;
           boolean targetMatch = dlon < 20 && dlon > -20 && dlat < 20 && dlat > -20;
           if (debugInfo != null) {
             debugInfo.append("target-delta = " + dlon + "/" + dlat + " targetMatch=" + targetMatch);
@@ -569,8 +569,8 @@ public final class OsmTrack {
 
     for (int i = 0; i <= pois.size() - 1; i++) {
       OsmNodeNamed poi = pois.get(i);
-      sb.append(" <wpt lon=\"").append(formatILon(poi.ilon)).append("\" lat=\"")
-        .append(formatILat(poi.ilat)).append("\">\n")
+      sb.append(" <wpt lon=\"").append(formatILon(poi.longitude)).append("\" lat=\"")
+        .append(formatILat(poi.latitude)).append("\">\n")
         .append("  <name>").append(StringUtils.escapeXml10(poi.name)).append("</name>\n")
         .append(" </wpt>\n");
     }
@@ -578,8 +578,8 @@ public final class OsmTrack {
     if (exportWaypoints) {
       for (int i = 0; i <= matchedWaypoints.size() - 1; i++) {
         MatchedWaypoint wt = matchedWaypoints.get(i);
-        sb.append(" <wpt lon=\"").append(formatILon(wt.waypoint.ilon)).append("\" lat=\"")
-          .append(formatILat(wt.waypoint.ilat)).append("\">\n")
+        sb.append(" <wpt lon=\"").append(formatILon(wt.waypoint.longitude)).append("\" lat=\"")
+          .append(formatILat(wt.waypoint.latitude)).append("\">\n")
           .append("  <name>").append(StringUtils.escapeXml10(wt.name)).append("</name>\n");
         if (i == 0) {
           sb.append("  <type>from</type>\n");
@@ -856,7 +856,7 @@ public final class OsmTrack {
         sb.append("      <name>poi</name>\n");
         for (int i = 0; i < pois.size(); i++) {
           OsmNodeNamed poi = pois.get(i);
-          createPlaceMark(sb, poi.name, poi.ilat, poi.ilon);
+          createPlaceMark(sb, poi.name, poi.latitude, poi.longitude);
         }
         sb.append("    </Folder>\n");
       }
@@ -881,7 +881,7 @@ public final class OsmTrack {
     sb.append("      <name>" + type + "</name>\n");
     for (int i = 0; i < waypoints.size(); i++) {
       MatchedWaypoint wp = waypoints.get(i);
-      createPlaceMark(sb, wp.name, wp.waypoint.ilat, wp.waypoint.ilon);
+      createPlaceMark(sb, wp.name, wp.waypoint.latitude, wp.waypoint.longitude);
     }
     sb.append("    </Folder>\n");
   }
@@ -1021,7 +1021,7 @@ public final class OsmTrack {
       sb.append("    },\n");
       for (int i = 0; i <= pois.size() - 1; i++) {
         OsmNodeNamed poi = pois.get(i);
-        addFeature(sb, "poi", poi.name, poi.ilat, poi.ilon);
+        addFeature(sb, "poi", poi.name, poi.latitude, poi.longitude);
         if (i < matchedWaypoints.size() - 1) {
           sb.append(",");
         }
@@ -1039,7 +1039,7 @@ public final class OsmTrack {
           }
 
           MatchedWaypoint wp = matchedWaypoints.get(i);
-          addFeature(sb, type, wp.name, wp.waypoint.ilat, wp.waypoint.ilon);
+          addFeature(sb, type, wp.name, wp.waypoint.latitude, wp.waypoint.longitude);
           if (i < matchedWaypoints.size() - 1) {
             sb.append(",");
           }

@@ -9,10 +9,7 @@ import com.routerbackend.expressions.BExpressionContextNode;
 import com.routerbackend.expressions.BExpressionContextWay;
 import com.routerbackend.expressions.BExpressionMetaData;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 
 public final class ProfileCache {
 
@@ -42,7 +39,7 @@ public final class ProfileCache {
 //      profileFile = new File(rc.localFunction);
 //    } else {
       profileDir = new File(profileBaseDir);
-      profileFile = new File(profileDir, rc.localFunction + ".brf");
+      profileFile = new File(profileDir, rc.getProfileName() + ".brf");
 //    }
 
     rc.profileTimestamp = profileFile.lastModified() + rc.getKeyValueChecksum() << 24;
@@ -88,7 +85,7 @@ public final class ProfileCache {
 
     BExpressionMetaData meta = new BExpressionMetaData();
 
-    rc.expctxWay = new BExpressionContextWay(rc.memoryclass * 512, meta);
+    rc.expctxWay = new BExpressionContextWay(rc.memoryClass * 512, meta);
     rc.expctxNode = new BExpressionContextNode(0, meta);
     rc.expctxNode.setForeignContext(rc.expctxWay);
 

@@ -28,10 +28,10 @@ public final class SearchBoundary {
     this.radius = radius;
     this.direction = direction;
 
-    p = new OsmNode(n.ilon, n.ilat);
+    p = new OsmNode(n.longitude, n.latitude);
 
-    int lon = (n.ilon / 5000000) * 5000000;
-    int lat = (n.ilat / 5000000) * 5000000;
+    int lon = (n.longitude / 5000000) * 5000000;
+    int lat = (n.latitude / 5000000) * 5000000;
 
     minlon0 = lon - 5000000;
     minlat0 = lat - 5000000;
@@ -45,8 +45,8 @@ public final class SearchBoundary {
   }
 
   public static String getFileName(OsmNode n) {
-    int lon = (n.ilon / 5000000) * 5000000;
-    int lat = (n.ilat / 5000000) * 5000000;
+    int lon = (n.longitude / 5000000) * 5000000;
+    int lat = (n.latitude / 5000000) * 5000000;
 
     int dlon = lon / 1000000 - 180;
     int dlat = lat / 1000000 - 90;
@@ -61,21 +61,21 @@ public final class SearchBoundary {
       return n.calcDistance(p) < radius;
     }
     if (cost == 0) {
-      return n.ilon > minlon0 && n.ilon < maxlon0 && n.ilat > minlat0 && n.ilat < maxlat0;
+      return n.longitude > minlon0 && n.longitude < maxlon0 && n.latitude > minlat0 && n.latitude < maxlat0;
     }
-    return n.ilon > minlon && n.ilon < maxlon && n.ilat > minlat && n.ilat < maxlat;
+    return n.longitude > minlon && n.longitude < maxlon && n.latitude > minlat && n.latitude < maxlat;
   }
 
   public int getBoundaryDistance(OsmNode n) {
     switch (direction) {
       case 0:
-        return n.calcDistance(new OsmNode(n.ilon, minlat));
+        return n.calcDistance(new OsmNode(n.longitude, minlat));
       case 1:
-        return n.calcDistance(new OsmNode(minlon, n.ilat));
+        return n.calcDistance(new OsmNode(minlon, n.latitude));
       case 2:
-        return n.calcDistance(new OsmNode(n.ilon, maxlat));
+        return n.calcDistance(new OsmNode(n.longitude, maxlat));
       case 3:
-        return n.calcDistance(new OsmNode(maxlon, n.ilat));
+        return n.calcDistance(new OsmNode(maxlon, n.latitude));
       default:
         throw new IllegalArgumentException("undefined direction: " + direction);
     }

@@ -8,17 +8,9 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class IRequestHandler {
-//  protected ServiceContext serviceContext;
   protected Map<String, String> params;
 
-  public IRequestHandler(//ServiceContext serviceContext,
-//                         Map<String, String> params
-  ) {
-    //this.serviceContext = serviceContext;
-//    this.params = params;
-  }
-
-  public abstract RoutingContext readRoutingContext(String profile, String nogos, String alternativeIdx);
+  public abstract RoutingContext readRoutingContext(String profile, String noGos, String alternativeIdx);
 
   public abstract List<OsmNodeNamed> readWayPointList(String lonLats);
 

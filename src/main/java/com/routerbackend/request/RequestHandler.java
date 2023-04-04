@@ -4,12 +4,9 @@ import com.routerbackend.core.OsmNodeNamed;
 import com.routerbackend.core.OsmTrack;
 import com.routerbackend.core.RoutingContext;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * URL query parameter handler for web and standalone server. Supports all
@@ -32,33 +29,18 @@ import java.util.Map;
  */
 public class RequestHandler extends IRequestHandler {
 
-  private RoutingContext rc;
-
-  public RequestHandler(//ServiceContext serviceContext,
-//                        Map<String, String> params
-  ) {
-    super(//serviceContext,
-//            params
-    );
-  }
-
   @Override
-  public RoutingContext readRoutingContext(String profile, String nogos, String alternativeIdx) {
-    rc = new RoutingContext();
-    rc.memoryclass = 128;
+  public RoutingContext readRoutingContext(String profile, String noGos, String alternativeIdx) {
+    RoutingContext routingContext = new RoutingContext();
+    routingContext.setProfileName(profile);
+    routingContext.setAlternativeIdx(alternativeIdx != null ? Integer.parseInt(alternativeIdx) : 0);
 
-    rc.localFunction = profile;
-    rc.setAlternativeIdx(alternativeIdx != null ? Integer.parseInt(alternativeIdx) : 0);
-
-//    List<OsmNodeNamed> poisList = readPoisList(pois);
-//    rc.poipoints = poisList;
-
-    List<OsmNodeNamed> nogoList = readNogoList(nogos);
+    List<OsmNodeNamed> noGoList = readNoGoList(noGos);
 //    List<OsmNodeNamed> nogoPolygonsList = readNogoPolygons();
 
-    if (nogoList != null) {
-      RoutingContext.prepareNogoPoints(nogoList);
-      rc.nogopoints = nogoList;
+    if (noGoList != null) {
+      RoutingContext.prepareNogoPoints(noGoList);
+      routingContext.nogopoints = noGoList;
     }
 
 //    if (rc.nogopoints == null) {
@@ -67,7 +49,7 @@ public class RequestHandler extends IRequestHandler {
 //      rc.nogopoints.addAll(nogoPolygonsList);
 //    }
 
-    return rc;
+    return routingContext;
   }
 
   @Override
@@ -184,62 +166,44 @@ public class RequestHandler extends IRequestHandler {
   private static OsmNodeNamed readPosition(double lon, double lat, String name) {
     OsmNodeNamed n = new OsmNodeNamed();
     n.name = name;
-    n.ilon = (int) ((lon + 180.) * 1000000. + 0.5);
-    n.ilat = (int) ((lat + 90.) * 1000000. + 0.5);
+    n.longitude = (int) ((lon + 180.) * 1000000. + 0.5);
+    n.latitude = (int) ((lat + 90.) * 1000000. + 0.5);
     return n;
   }
 
-//private List<OsmNodeNamed> readPoisList(String pois) {
-//  String[] lonLatNameList = pois.split("\\|");
-//
-//  List<OsmNodeNamed> poisList = new ArrayList<>();
-//  for (int i = 0; i < lonLatNameList.length; i++) {
-//    String[] lonLatName = lonLatNameList[i].split(",");
-//
-//    if (lonLatName.length != 3)
-//      continue;
-//
-//    OsmNodeNamed n = new OsmNodeNamed();
-//    n.ilon = (int) ((Double.parseDouble(lonLatName[0]) + 180.) * 1000000. + 0.5);
-//    n.ilat = (int) ((Double.parseDouble(lonLatName[1]) + 90.) * 1000000. + 0.5);
-//    n.name = lonLatName[2];
-//    poisList.add(n);
-//  }
-//
-//  return poisList;
-//}
+  private List<OsmNodeNamed> readNoGoList(String noGos) {
+    if(noGos.isEmpty())
+      return Collections.emptyList();
+    String[] lonLatRadList = noGos.split(";");
 
-  private List<OsmNodeNamed> readNogoList(String nogos) {
-    if(nogos.isEmpty())
-      return null;
-    String[] lonLatRadList = nogos.split(";");
-
-    List<OsmNodeNamed> nogoList = new ArrayList<>();
-    for (int i = 0; i < lonLatRadList.length; i++) {
-      String[] lonLatRad = lonLatRadList[i].split(",");
-      String nogoWeight = "NaN";
+    List<OsmNodeNamed> noGoList = new ArrayList<>();
+    for (String s : lonLatRadList) {
+      String[] lonLatRad = s.split(",");
+      String noGoWeight = "NaN";
+//      String noGoWeight = "0";
       if (lonLatRad.length > 3) {
-        nogoWeight = lonLatRad[3];
+        noGoWeight = lonLatRad[3];
       }
-      nogoList.add(readNogo(lonLatRad[0], lonLatRad[1], lonLatRad[2], nogoWeight));
+      noGoList.add(readNoGo(lonLatRad[0], lonLatRad[1], lonLatRad[2], noGoWeight));
     }
 
-    return nogoList;
+    return noGoList;
   }
 
-  private static OsmNodeNamed readNogo(String lon, String lat, String radius, String nogoWeight) {
-    double weight = "undefined".equals(nogoWeight) ? Double.NaN : Double.parseDouble(nogoWeight);
-    return readNogo(Double.parseDouble(lon), Double.parseDouble(lat), Integer.parseInt(radius), weight);
+  private static OsmNodeNamed readNoGo(String longitude, String latitude, String radius, String noGoWeight) {
+    double weight = "undefined".equals(noGoWeight) ? Double.NaN : Double.parseDouble(noGoWeight);
+    return readNoGo(Double.parseDouble(longitude), Double.parseDouble(latitude), Integer.parseInt(radius), weight);
+//    return readNoGo(Double.parseDouble(lon), Double.parseDouble(lat), Integer.parseInt(radius), Double.parseDouble(noGoWeight));
   }
 
-  private static OsmNodeNamed readNogo(double lon, double lat, int radius, double nogoWeight) {
-    OsmNodeNamed n = new OsmNodeNamed();
-    n.name = "nogo" + radius;
-    n.ilon = (int) ((lon + 180.) * 1000000. + 0.5);
-    n.ilat = (int) ((lat + 90.) * 1000000. + 0.5);
-    n.isNogo = true;
-    n.nogoWeight = nogoWeight;
-    return n;
+  private static OsmNodeNamed readNoGo(double longitude, double latitude, int radius, double noGoWeight) {
+    OsmNodeNamed node = new OsmNodeNamed();
+    node.name = "nogo" + radius;
+    node.longitude = (int) ((longitude + 180.) * 1000000. + 0.5);
+    node.latitude = (int) ((latitude + 90.) * 1000000. + 0.5);
+    node.isNoGo = true;
+    node.noGoWeight = noGoWeight;
+    return node;
   }
 
 //  private List<OsmNodeNamed> readNogoPolygons() {

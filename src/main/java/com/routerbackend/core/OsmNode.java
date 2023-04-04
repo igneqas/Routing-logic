@@ -18,12 +18,12 @@ public class OsmNode extends OsmLink implements OsmPos
   /**
    * The latitude
    */
-  public int ilat;
+  public int latitude;
 
   /**
    * The longitude
    */
-  public int ilon;
+  public int longitude;
 
   /**
    * The elevation
@@ -52,24 +52,24 @@ public class OsmNode extends OsmLink implements OsmPos
   public OsmNode() {
   }
 
-  public OsmNode(int ilon, int ilat) {
-    this.ilon = ilon;
-    this.ilat = ilat;
+  public OsmNode(int longitude, int latitude) {
+    this.longitude = longitude;
+    this.latitude = latitude;
   }
 
   public OsmNode(long id) {
-    ilon = (int) (id >> 32);
-    ilat = (int) (id & 0xffffffff);
+    longitude = (int) (id >> 32);
+    latitude = (int) (id & 0xffffffff);
   }
 
 
   // interface OsmPos
   public final int getILat() {
-    return ilat;
+    return latitude;
   }
 
   public final int getILon() {
-    return ilon;
+    return longitude;
   }
 
   public final short getSElev() {
@@ -103,11 +103,11 @@ public class OsmNode extends OsmLink implements OsmPos
   }
 
   public final int calcDistance(OsmPos p) {
-    return (int) Math.max(1.0, Math.round(CheapRuler.distance(ilon, ilat, p.getILon(), p.getILat())));
+    return (int) Math.max(1.0, Math.round(CheapRuler.distance(longitude, latitude, p.getILon(), p.getILat())));
   }
 
   public String toString() {
-    return "n_" + (ilon - 180000000) + "_" + (ilat - 90000000);
+    return "n_" + (longitude - 180000000) + "_" + (latitude - 90000000);
   }
 
   public final void parseNodeBody(MicroCache mc, OsmNodesMap hollowNodes, IByteArrayUnifier expCtxWay) {
@@ -139,8 +139,8 @@ public class OsmNode extends OsmLink implements OsmPos
     while (mc.hasMoreData()) {
       // read link data
       int endPointer = mc.getEndPointer();
-      int linklon = ilon + mc.readVarLengthSigned();
-      int linklat = ilat + mc.readVarLengthSigned();
+      int linklon = longitude + mc.readVarLengthSigned();
+      int linklat = latitude + mc.readVarLengthSigned();
       int sizecode = mc.readVarLengthUnsigned();
       boolean isReverse = (sizecode & 1) != 0;
       byte[] description = null;
@@ -156,7 +156,7 @@ public class OsmNode extends OsmLink implements OsmPos
   }
 
   public void addLink(int linklon, int linklat, byte[] description, byte[] geometry, OsmNodesMap hollowNodes, boolean isReverse) {
-    if (linklon == ilon && linklat == ilat) {
+    if (linklon == longitude && linklat == latitude) {
       return; // skip self-ref
     }
 
@@ -166,7 +166,7 @@ public class OsmNode extends OsmLink implements OsmPos
     // ...in our known links
     for (OsmLink l = firstlink; l != null; l = l.getNext(this)) {
       OsmNode t = l.getTarget(this);
-      if (t.ilon == linklon && t.ilat == linklat) {
+      if (t.longitude == linklon && t.latitude == linklat) {
         tn = t;
         if (isReverse || (l.descriptionBitmap == null && !l.isReverse(this))) {
           link = l; // the correct one that needs our data
@@ -204,7 +204,7 @@ public class OsmNode extends OsmLink implements OsmPos
   }
 
   public final long getIdFromPos() {
-    return ((long) ilon) << 32 | ilat;
+    return ((long) longitude) << 32 | latitude;
   }
 
   public void vanish() {
@@ -258,11 +258,11 @@ public class OsmNode extends OsmLink implements OsmPos
 
   @Override
   public final boolean equals(Object o) {
-    return ((OsmNode) o).ilon == ilon && ((OsmNode) o).ilat == ilat;
+    return ((OsmNode) o).longitude == longitude && ((OsmNode) o).latitude == latitude;
   }
 
   @Override
   public final int hashCode() {
-    return ilon + ilat;
+    return longitude + latitude;
   }
 }

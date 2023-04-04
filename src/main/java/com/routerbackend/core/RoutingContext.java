@@ -14,34 +14,27 @@ import com.routerbackend.utils.CheapAngleMeter;
 import com.routerbackend.utils.CheapRuler;
 
 import java.io.DataOutput;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.routerbackend.Constants.MEMORY_CLASS;
+
 public final class RoutingContext {
-  public int alternativeIdx = 0;
-  public String localFunction;
+  private int alternativeIdx;
+  private String profileName;
   public long profileTimestamp;
 
   public Map<String, String> keyValues;
 
   public String rawTrackPath;
 
-  public String getProfileName() {
-    String name = localFunction == null ? "unknown" : localFunction;
-    if (name.endsWith(".brf")) name = name.substring(0, localFunction.length() - 4);
-    int idx = name.lastIndexOf(File.separatorChar);
-    if (idx >= 0) name = name.substring(idx + 1);
-    return name;
-  }
-
   public BExpressionContextWay expctxWay;
   public BExpressionContextNode expctxNode;
 
   public GeometryDecoder geometryDecoder = new GeometryDecoder();
 
-  public int memoryclass = 64;
+  public int memoryClass = MEMORY_CLASS;
 
   public int downhillcostdiv;
   public int downhillcutoff;
@@ -281,8 +274,8 @@ public final class RoutingContext {
         if (wp.calcDistance(nogo) < nogo.radius
           && (!(nogo instanceof OsmNogoPolygon)
           || (((OsmNogoPolygon) nogo).isClosed
-          ? ((OsmNogoPolygon) nogo).isWithin(wp.ilon, wp.ilat)
-          : ((OsmNogoPolygon) nogo).isOnPolyline(wp.ilon, wp.ilat)))) {
+          ? ((OsmNogoPolygon) nogo).isWithin(wp.longitude, wp.latitude)
+          : ((OsmNogoPolygon) nogo).isOnPolyline(wp.longitude, wp.latitude)))) {
           goodGuy = false;
         }
       }
@@ -306,8 +299,8 @@ public final class RoutingContext {
         if (wp.calcDistance(nogo) < nogo.radius
           && (!(nogo instanceof OsmNogoPolygon)
           || (((OsmNogoPolygon) nogo).isClosed
-          ? ((OsmNogoPolygon) nogo).isWithin(wp.ilon, wp.ilat)
-          : ((OsmNogoPolygon) nogo).isOnPolyline(wp.ilon, wp.ilat)))) {
+          ? ((OsmNogoPolygon) nogo).isWithin(wp.longitude, wp.latitude)
+          : ((OsmNogoPolygon) nogo).isOnPolyline(wp.longitude, wp.latitude)))) {
           isInsideNogo = true;
           break;
         }
@@ -348,14 +341,14 @@ public final class RoutingContext {
     if (nogopoints == null) return false;
     boolean allInTotal = false;
     for (OsmNodeNamed nogo : nogopoints) {
-      boolean allIn = Double.isNaN(nogo.nogoWeight);
+      boolean allIn = Double.isNaN(nogo.noGoWeight);
       for (OsmNode wp : waypoints) {
         int dist = wp.calcDistance(nogo);
         if (dist < nogo.radius
           && (!(nogo instanceof OsmNogoPolygon)
           || (((OsmNogoPolygon) nogo).isClosed
-          ? ((OsmNogoPolygon) nogo).isWithin(wp.ilon, wp.ilat)
-          : ((OsmNogoPolygon) nogo).isOnPolyline(wp.ilon, wp.ilat)))) {
+          ? ((OsmNogoPolygon) nogo).isWithin(wp.longitude, wp.latitude)
+          : ((OsmNogoPolygon) nogo).isOnPolyline(wp.longitude, wp.latitude)))) {
           continue;
         }
         allIn = false;
@@ -370,8 +363,8 @@ public final class RoutingContext {
     int n = nogopoints == null ? 0 : nogopoints.size();
     for (int i = 0; i < n; i++) {
       OsmNodeNamed nogo = nogopoints.get(i);
-      cs[0] += nogo.ilon;
-      cs[1] += nogo.ilat;
+      cs[0] += nogo.longitude;
+      cs[1] += nogo.latitude;
       // 10 is an arbitrary constant to get sub-integer precision in the checksum
       cs[2] += (long) (nogo.radius * 10.);
     }
@@ -420,10 +413,10 @@ public final class RoutingContext {
     if (nogopoints != null && !nogopoints.isEmpty() && d > 0.) {
       for (int ngidx = 0; ngidx < nogopoints.size(); ngidx++) {
         OsmNodeNamed nogo = nogopoints.get(ngidx);
-        double x1 = (lon1 - nogo.ilon) * dlon2m;
-        double y1 = (lat1 - nogo.ilat) * dlat2m;
-        double x2 = (lon2 - nogo.ilon) * dlon2m;
-        double y2 = (lat2 - nogo.ilat) * dlat2m;
+        double x1 = (lon1 - nogo.longitude) * dlon2m;
+        double y1 = (lat1 - nogo.latitude) * dlat2m;
+        double x2 = (lon2 - nogo.longitude) * dlon2m;
+        double y2 = (lat2 - nogo.latitude) * dlat2m;
         double r12 = x1 * x1 + y1 * y1;
         double r22 = x2 * x2 + y2 * y2;
         double radius = Math.abs(r12 < r22 ? y1 * dx - x1 * dy : y2 * dx - x2 * dy) / d;
@@ -442,28 +435,28 @@ public final class RoutingContext {
             radius = Math.sqrt(s1 < s2 ? r12 : r22);
             if (radius > nogo.radius) continue;
           }
-          if (nogo.isNogo) {
+          if (nogo.isNoGo) {
             if (!(nogo instanceof OsmNogoPolygon)) {  // nogo is a circle
-              if (Double.isNaN(nogo.nogoWeight)) {
+              if (Double.isNaN(nogo.noGoWeight)) {
                 // default nogo behaviour (ignore completely)
                 nogoCost = -1;
               } else {
                 // nogo weight, compute distance within the circle
-                nogoCost = nogo.distanceWithinRadius(lon1, lat1, lon2, lat2, d) * nogo.nogoWeight;
+                nogoCost = nogo.distanceWithinRadius(lon1, lat1, lon2, lat2, d) * nogo.noGoWeight;
               }
             } else if (((OsmNogoPolygon) nogo).intersects(lon1, lat1, lon2, lat2)) {
               // nogo is a polyline/polygon, we have to check there is indeed
               // an intersection in this case (radius check is not enough).
-              if (Double.isNaN(nogo.nogoWeight)) {
+              if (Double.isNaN(nogo.noGoWeight)) {
                 // default nogo behaviour (ignore completely)
                 nogoCost = -1;
               } else {
                 if (((OsmNogoPolygon) nogo).isClosed) {
                   // compute distance within the polygon
-                  nogoCost = ((OsmNogoPolygon) nogo).distanceWithinPolygon(lon1, lat1, lon2, lat2) * nogo.nogoWeight;
+                  nogoCost = ((OsmNogoPolygon) nogo).distanceWithinPolygon(lon1, lat1, lon2, lat2) * nogo.noGoWeight;
                 } else {
                   // for a polyline, just add a constant penalty
-                  nogoCost = nogo.nogoWeight;
+                  nogoCost = nogo.noGoWeight;
                 }
               }
             }
@@ -475,8 +468,8 @@ public final class RoutingContext {
               wayfraction = -s2 / (d * d);
               double xm = x2 - wayfraction * dx;
               double ym = y2 - wayfraction * dy;
-              ilonshortest = (int) (xm / dlon2m + nogo.ilon);
-              ilatshortest = (int) (ym / dlat2m + nogo.ilat);
+              ilonshortest = (int) (xm / dlon2m + nogo.longitude);
+              ilatshortest = (int) (ym / dlat2m + nogo.latitude);
             } else if (s1 > s2) {
               wayfraction = 0.;
               ilonshortest = lon2;
@@ -538,5 +531,13 @@ public final class RoutingContext {
 
   public int getAlternativeIdx(int min, int max) {
     return alternativeIdx < min ? min : (alternativeIdx > max ? max : alternativeIdx);
+  }
+
+  public String getProfileName() {
+    return profileName;
+  }
+
+  public void setProfileName(String profileName) {
+    this.profileName = profileName;
   }
 }

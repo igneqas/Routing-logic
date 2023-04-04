@@ -223,8 +223,8 @@ abstract class OsmPath implements OsmLinkHolder {
       short originEle2;
 
       if (transferNode == null) {
-        lon2 = targetNode.ilon;
-        lat2 = targetNode.ilat;
+        lon2 = targetNode.longitude;
+        lat2 = targetNode.latitude;
         originEle2 = targetNode.selev;
       } else {
         lon2 = transferNode.ilon;

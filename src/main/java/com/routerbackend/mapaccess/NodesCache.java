@@ -209,7 +209,7 @@ public final class NodesCache {
     if (!node.isHollow())
       return true;
 
-    MicroCache segment = getSegmentFor(node.ilon, node.ilat);
+    MicroCache segment = getSegmentFor(node.longitude, node.latitude);
     if (segment == null) {
       return false;
     }
@@ -275,7 +275,7 @@ public final class NodesCache {
   }
 
   public OsmNode getGraphNode(OsmNode template) {
-    OsmNode graphNode = new OsmNode(template.ilon, template.ilat);
+    OsmNode graphNode = new OsmNode(template.longitude, template.latitude);
     graphNode.setHollow();
     OsmNode existing = nodesMap.put(graphNode);
     if (existing == null) {
@@ -299,14 +299,14 @@ public final class NodesCache {
       MatchedWaypoint mwp = unmatchedWaypoints.get(i);
       if (mwp.crosspoint == null) {
         if (unmatchedWaypoints.size() > 1 && i == unmatchedWaypoints.size() - 1 && unmatchedWaypoints.get(i - 1).direct) {
-          mwp.crosspoint = new OsmNode(mwp.waypoint.ilon, mwp.waypoint.ilat);
+          mwp.crosspoint = new OsmNode(mwp.waypoint.longitude, mwp.waypoint.latitude);
           mwp.direct = true;
         } else {
           throw new IllegalArgumentException(mwp.name + "-position not mapped in existing datafile");
         }
       }
       if (unmatchedWaypoints.size() > 1 && i == unmatchedWaypoints.size() - 1 && unmatchedWaypoints.get(i - 1).direct) {
-        mwp.crosspoint = new OsmNode(mwp.waypoint.ilon, mwp.waypoint.ilat);
+        mwp.crosspoint = new OsmNode(mwp.waypoint.longitude, mwp.waypoint.latitude);
         mwp.direct = true;
       }
     }
@@ -316,14 +316,14 @@ public final class NodesCache {
     int d = 12500;
     first_file_access_failed = false;
     first_file_access_name = null;
-    loadSegmentFor(n.ilon, n.ilat);
+    loadSegmentFor(n.longitude, n.latitude);
     if (first_file_access_failed) {
       throw new IllegalArgumentException("datafile " + first_file_access_name + " not found");
     }
     for (int idxLat = -1; idxLat <= 1; idxLat++)
       for (int idxLon = -1; idxLon <= 1; idxLon++) {
         if (idxLon != 0 || idxLat != 0) {
-          loadSegmentFor(n.ilon + d * idxLon, n.ilat + d * idxLat);
+          loadSegmentFor(n.longitude + d * idxLon, n.latitude + d * idxLat);
         }
       }
   }
