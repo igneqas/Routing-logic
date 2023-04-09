@@ -7,6 +7,9 @@ import com.routerbackend.core.RoutingContext;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+
+import static com.routerbackend.pollution.PollutionDataHandler.getPollutionData;
 
 /**
  * URL query parameter handler for web and standalone server. Supports all
@@ -30,24 +33,18 @@ import java.util.List;
 public class RequestHandler extends IRequestHandler {
 
   @Override
-  public RoutingContext readRoutingContext(String profile, String noGos, String alternativeIdx) {
+  public RoutingContext readRoutingContext(String profile, String alternativeIdx) {
     RoutingContext routingContext = new RoutingContext();
-    routingContext.setProfileName(profile);
+    routingContext.setProfileName("shortest");
     routingContext.setAlternativeIdx(alternativeIdx != null ? Integer.parseInt(alternativeIdx) : 0);
 
-    List<OsmNodeNamed> noGoList = readNoGoList(noGos);
-//    List<OsmNodeNamed> nogoPolygonsList = readNogoPolygons();
-
-    if (noGoList != null) {
-      RoutingContext.prepareNogoPoints(noGoList);
+    if(Objects.equals(profile, "pollution-free")) {
+      String noGos = getPollutionData();
+      System.out.println(noGos);
+      List<OsmNodeNamed> noGoList = readNoGoList(noGos);
+      RoutingContext.prepareNoGoPoints(noGoList);
       routingContext.nogopoints = noGoList;
     }
-
-//    if (rc.nogopoints == null) {
-//      rc.nogopoints = nogoPolygonsList;
-//    } else if (nogoPolygonsList != null) {
-//      rc.nogopoints.addAll(nogoPolygonsList);
-//    }
 
     return routingContext;
   }

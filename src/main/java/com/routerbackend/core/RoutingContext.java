@@ -232,12 +232,12 @@ public final class RoutingContext {
   public double defaultC_r;
   public double bikerPower;
 
-  public static void prepareNogoPoints(List<OsmNodeNamed> nogos) {
-    for (OsmNodeNamed nogo : nogos) {
-      if (nogo instanceof OsmNogoPolygon) {
+  public static void prepareNoGoPoints(List<OsmNodeNamed> noGos) {
+    for (OsmNodeNamed noGo : noGos) {
+      if (noGo instanceof OsmNogoPolygon) {
         continue;
       }
-      String s = nogo.name;
+      String s = noGo.name;
       int idx = s.indexOf(' ');
       if (idx > 0) s = s.substring(0, idx);
       int ir = 20; // default radius
@@ -247,7 +247,7 @@ public final class RoutingContext {
         } catch (Exception e) { /* ignore */ }
       }
       // Radius of the nogo point in meters
-      nogo.radius = ir;
+      noGo.radius = ir;
     }
   }
 

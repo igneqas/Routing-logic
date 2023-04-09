@@ -10,7 +10,7 @@ import java.util.Map;
 public abstract class IRequestHandler {
   protected Map<String, String> params;
 
-  public abstract RoutingContext readRoutingContext(String profile, String noGos, String alternativeIdx);
+  public abstract RoutingContext readRoutingContext(String profile, String alternativeIdx);
 
   public abstract List<OsmNodeNamed> readWayPointList(String lonLats);
 
