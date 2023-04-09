@@ -3,13 +3,14 @@ package com.routerbackend.request;
 import com.routerbackend.core.OsmNodeNamed;
 import com.routerbackend.core.OsmTrack;
 import com.routerbackend.core.RoutingContext;
+import com.routerbackend.pollution.PollutionDataHandler;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-
-import static com.routerbackend.pollution.PollutionDataHandler.getPollutionData;
 
 /**
  * URL query parameter handler for web and standalone server. Supports all
@@ -30,16 +31,18 @@ import static com.routerbackend.pollution.PollutionDataHandler.getPollutionData;
  * {@code http://localhost:17777/brouter?lonlats=8.799297,49.565883|8.811764,49.563606&nogos=&profile=trekking&alternativeidx=0&format=gpx}
  * {@code http://localhost:17777/brouter?lonlats=1.1,1.2|2.1,2.2|3.1,3.2|4.1,4.2&nogos=-1.1,-1.2,1|-2.1,-2.2,2&profile=shortest&alternativeidx=1&format=kml&trackname=Ride&pois=1.1,2.1,Barner Bar}
  */
+
 public class RequestHandler extends IRequestHandler {
 
   @Override
   public RoutingContext readRoutingContext(String profile, String alternativeIdx) {
     RoutingContext routingContext = new RoutingContext();
-    routingContext.setProfileName("shortest");
+    routingContext.setProfileName(profile);
     routingContext.setAlternativeIdx(alternativeIdx != null ? Integer.parseInt(alternativeIdx) : 0);
 
     if(Objects.equals(profile, "pollution-free")) {
-      String noGos = getPollutionData();
+      routingContext.setProfileName("safety");
+      String noGos = PollutionDataHandler.getPollutionData();
       System.out.println(noGos);
       List<OsmNodeNamed> noGoList = readNoGoList(noGos);
       RoutingContext.prepareNoGoPoints(noGoList);
