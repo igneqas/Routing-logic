@@ -1,4 +1,4 @@
-package com.routerbackend.pollution;
+package com.routerbackend.extradata.pollution;
 
 public class PollutionToWeightConverter {
     public static RadiusAndWeight convertVilniusDataToWeight(double nh3, double so2, double o3, double co, double no2, double pm2_5, double pm10)

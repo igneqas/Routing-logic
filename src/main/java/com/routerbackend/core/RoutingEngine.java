@@ -34,11 +34,7 @@ public class RoutingEngine extends Thread {
   private volatile boolean terminated;
 
   protected File segmentDir = new File("src/main/java/com/data/segments");
-  private String outfileBase;
-  private String logfileBase;
-  private boolean infoLogEnabled;
   private Writer infoLogWriter;
-//  private StackSampler stackSampler;
   protected RoutingContext routingContext;
 
   public double airDistanceCostFactor;
@@ -50,88 +46,23 @@ public class RoutingEngine extends Thread {
   private long maxRunningTime;
   public SearchBoundary boundary;
 
-  public boolean quite = false;
-
   private Object[] extract;
 
   private boolean directWeaving = !Boolean.getBoolean("disableDirectWeaving");
-  private String outfile;
 
-  public RoutingEngine(//String outfileBase, String logfileBase, File segmentDir,
-                       List<OsmNodeNamed> waypoints, RoutingContext rc) {
-//    this.segmentDir = segmentDir;
-//    this.outfileBase = outfileBase;
-//    this.logfileBase = logfileBase;
+  public RoutingEngine(List<OsmNodeNamed> waypoints, RoutingContext routingContext) {
     this.waypoints = waypoints;
-//    this.infoLogEnabled = outfileBase != null;
-    this.routingContext = rc;
-
-//    File baseFolder = new File(routingContext.localFunction).getParentFile();
-//    baseFolder = baseFolder == null ? null : baseFolder.getParentFile();
-//    if (baseFolder != null) {
-//      try {
-//        File debugLog = new File(baseFolder, "debug.txt");
-//        if (debugLog.exists()) {
-//          infoLogWriter = new FileWriter(debugLog, true);
-//          logInfo("********** start request at ");
-//          logInfo("********** " + new Date());
-//        }
-//      } catch (IOException ioe) {
-//        throw new RuntimeException("cannot open debug-log:" + ioe);
-//      }
-//
-//      File stackLog = new File(baseFolder, "stacks.txt");
-//      if (stackLog.exists()) {
-//        stackSampler = new StackSampler(stackLog, 1000);
-//        stackSampler.start();
-//        logInfo("********** started stacksampling");
-//      }
-//    }
-    boolean cachedProfile = ProfileCache.parseProfile(rc);
-//    if (hasInfo()) {
-//      logInfo("parsed profile " + rc.localFunction + " cached=" + cachedProfile);
-//    }
+    this.routingContext = routingContext;
+    ProfileActions.parseProfile(routingContext);
   }
 
-//  private boolean hasInfo() {
-//    return infoLogEnabled || infoLogWriter != null;
-//  }
-//
-//  private void logInfo(String s) {
-//    if (infoLogEnabled) {
-//      System.out.println(s);
-//    }
-//    if (infoLogWriter != null) {
-//      try {
-//        infoLogWriter.write(s);
-//        infoLogWriter.write('\n');
-//        infoLogWriter.flush();
-//      } catch (IOException io) {
-//        infoLogWriter = null;
-//      }
-//    }
-//  }
-//
-//  private void logThrowable(Throwable t) {
-//    StringWriter sw = new StringWriter();
-//    PrintWriter pw = new PrintWriter(sw);
-//    t.printStackTrace(pw);
-//    logInfo(sw.toString());
-//  }
-//
-//  public void run() {
-//    doRun(0);
-//  }
-//
   public void doRun() {
     try {
       startTime = System.currentTimeMillis();
-      long startTime0 = startTime;
-//      this.maxRunningTime = maxRunningTime;
-      int nsections = waypoints.size() - 1;
-      OsmTrack[] refTracks = new OsmTrack[nsections]; // used ways for alternatives
-      OsmTrack[] lastTracks = new OsmTrack[nsections];
-      OsmTrack track = null;
+      int sectionCount = waypoints.size() - 1;
+      OsmTrack[] refTracks = new OsmTrack[sectionCount]; // used ways for alternatives
+      OsmTrack[] lastTracks = new OsmTrack[sectionCount];
+      OsmTrack track;
       ArrayList<String> messageList = new ArrayList<>();
       for (int i = 0; ; i++) {
         track = findTrack(refTracks, lastTracks);
@@ -192,7 +123,7 @@ public class RoutingEngine extends Thread {
 //        logInfo("expression cache stats=" + routingContext.expctxWay.cacheStats());
 //      }
 
-      ProfileCache.releaseProfile(routingContext);
+      ProfileActions.releaseProfile(routingContext);
 
       if (nodesCache != null) {
 //        if (hasInfo() && nodesCache != null) {
@@ -362,7 +293,7 @@ public class RoutingEngine extends Thread {
       logException(e);
 //      logThrowable(e);
     } finally {
-      ProfileCache.releaseProfile(routingContext);
+      ProfileActions.releaseProfile(routingContext);
       if (nodesCache != null) {
         nodesCache.close();
         nodesCache = null;
@@ -932,7 +863,7 @@ public class RoutingEngine extends Thread {
 //    }
     long maxmem = routingContext.memoryClass * 1024L * 1024L; // in MB
 
-    nodesCache = new NodesCache(segmentDir, routingContext.expctxWay, routingContext.forceSecondaryData, maxmem, nodesCache, detailed);
+    nodesCache = new NodesCache(segmentDir, routingContext.expressionContextWay, routingContext.forceSecondaryData, maxmem, nodesCache, detailed);
     islandNodePairs.clearTempPairs();
   }
 
@@ -1562,9 +1493,5 @@ public class RoutingEngine extends Thread {
 
   public boolean isTerminated() {
     return terminated;
-  }
-
-  public String getOutfile() {
-    return outfile;
   }
 }

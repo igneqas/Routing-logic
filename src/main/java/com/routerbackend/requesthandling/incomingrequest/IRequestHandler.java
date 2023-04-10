@@ -1,4 +1,4 @@
-package com.routerbackend.incomingrequest;
+package com.routerbackend.requesthandling.incomingrequest;
 
 import com.routerbackend.core.OsmNodeNamed;
 import com.routerbackend.core.OsmTrack;
@@ -9,7 +9,7 @@ import java.util.List;
 public interface IRequestHandler {
   RoutingContext readRoutingContext(String profile, String alternativeIdx);
 
-  List<OsmNodeNamed> readWayPointList(String lonLats);
+  List<OsmNodeNamed> readWaypointList(String lonLats);
 
   String formatTrack(OsmTrack track);
 }

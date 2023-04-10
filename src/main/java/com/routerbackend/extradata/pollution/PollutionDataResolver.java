@@ -1,4 +1,4 @@
-package com.routerbackend.pollution;
+package com.routerbackend.extradata.pollution;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

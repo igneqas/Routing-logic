@@ -1,10 +1,10 @@
-package com.routerbackend.incomingrequest;
+package com.routerbackend.requesthandling.incomingrequest;
 
 import com.routerbackend.core.OsmNodeNamed;
 import com.routerbackend.core.OsmTrack;
 import com.routerbackend.core.RoutingContext;
-import com.routerbackend.pollution.PollutionDataHandler;
-import com.routerbackend.traffic.TrafficDataHandler;
+import com.routerbackend.extradata.pollution.PollutionDataHandler;
+import com.routerbackend.extradata.traffic.TrafficDataHandler;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,30 +51,26 @@ public class RequestHandler implements IRequestHandler {
   }
 
   @Override
-  public List<OsmNodeNamed> readWayPointList(String lonLats) {
-    String[] coords = lonLats.split("\\;");
-    if (coords.length < 2)
-      throw new IllegalArgumentException("we need two lat/lon points at least!");
+  public List<OsmNodeNamed> readWaypointList(String lonLats) {
+    String[] coordinates = lonLats.split("\\;");
+    if (coordinates.length < 2)
+      throw new IllegalArgumentException("At least two lat/lon points are required!");
 
-    List<OsmNodeNamed> wplist = new ArrayList<>();
-    for (int i = 0; i < coords.length; i++) {
-      String[] lonLat = coords[i].split(",");
+    List<OsmNodeNamed> waypointList = new ArrayList<>();
+    for (int i = 0; i < coordinates.length; i++) {
+      String[] lonLat = coordinates[i].split(",");
       if (lonLat.length < 2)
-        throw new IllegalArgumentException("we need two lat/lon points at least!");
-      wplist.add(readPosition(lonLat[0], lonLat[1], "via" + i));
-      if (lonLat.length > 2) {
-        if (lonLat[2].equals("d")) {
-          wplist.get(wplist.size()-1).direct = true;
-        } else {
-          wplist.get(wplist.size()-1).name = lonLat[2];
-        }
+        throw new IllegalArgumentException("Longitude and latitude are required!");
+      waypointList.add(readPosition(lonLat[0], lonLat[1], "via" + i));
+      if (lonLat.length > 2 && lonLat[2].equals("d")) {
+          waypointList.get(waypointList.size()-1).direct = true;
       }
     }
 
-    wplist.get(0).name = "from";
-    wplist.get(wplist.size() - 1).name = "to";
+    waypointList.get(0).name = "from";
+    waypointList.get(waypointList.size() - 1).name = "to";
 
-    return wplist;
+    return waypointList;
   }
 
   @Override
@@ -115,11 +111,11 @@ public class RequestHandler implements IRequestHandler {
     return result;
   }
 
-  private static OsmNodeNamed readPosition(String vlon, String vlat, String name) {
-    if (vlon == null) throw new IllegalArgumentException("lon " + name + " not found in input");
-    if (vlat == null) throw new IllegalArgumentException("lat " + name + " not found in input");
+  private static OsmNodeNamed readPosition(String longitude, String latitude, String name) {
+    if (longitude == null) throw new IllegalArgumentException("lon " + name + " not found in input");
+    if (latitude == null) throw new IllegalArgumentException("lat " + name + " not found in input");
 
-    return readPosition(Double.parseDouble(vlon), Double.parseDouble(vlat), name);
+    return readPosition(Double.parseDouble(longitude), Double.parseDouble(latitude), name);
   }
 
   private static OsmNodeNamed readPosition(double lon, double lat, String name) {

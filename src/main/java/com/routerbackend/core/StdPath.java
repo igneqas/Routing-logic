@@ -43,10 +43,10 @@ final class StdPath extends OsmPath {
   @Override
   protected double processWaySection(RoutingContext rc, double distance, double delta_h, double elevation, double angle, double cosangle, boolean isStartpoint, int nsection, int lastpriorityclassifier) {
     // calculate the costfactor inputs
-    float turncostbase = rc.expctxWay.getTurncost();
-    float cfup = rc.expctxWay.getUphillCostfactor();
-    float cfdown = rc.expctxWay.getDownhillCostfactor();
-    float cf = rc.expctxWay.getCostfactor();
+    float turncostbase = rc.expressionContextWay.getTurncost();
+    float cfup = rc.expressionContextWay.getUphillCostfactor();
+    float cfdown = rc.expressionContextWay.getDownhillCostfactor();
+    float cf = rc.expressionContextWay.getCostfactor();
     cfup = cfup == 0.f ? cf : cfup;
     cfdown = cfdown == 0.f ? cf : cfdown;
 
@@ -137,15 +137,15 @@ final class StdPath extends OsmPath {
   protected double processTargetNode(RoutingContext rc) {
     // finally add node-costs for target node
     if (targetNode.nodeDescription != null) {
-      boolean nodeAccessGranted = rc.expctxWay.getNodeAccessGranted() != 0.;
-      rc.expctxNode.evaluate(nodeAccessGranted, targetNode.nodeDescription);
-      float initialcost = rc.expctxNode.getInitialcost();
+      boolean nodeAccessGranted = rc.expressionContextWay.getNodeAccessGranted() != 0.;
+      rc.expressionContextNode.evaluate(nodeAccessGranted, targetNode.nodeDescription);
+      float initialcost = rc.expressionContextNode.getInitialcost();
       if (initialcost >= 1000000.) {
         return -1.;
       }
       if (message != null) {
         message.linknodecost += (int) initialcost;
-        message.nodeKeyValues = rc.expctxNode.getKeyValueDescription(nodeAccessGranted, targetNode.nodeDescription);
+        message.nodeKeyValues = rc.expressionContextNode.getKeyValueDescription(nodeAccessGranted, targetNode.nodeDescription);
       }
       return initialcost;
     }
@@ -201,7 +201,7 @@ final class StdPath extends OsmPath {
     double incline = calcIncline(dist);
 
     double maxSpeed = rc.maxSpeed;
-    double speedLimit = rc.expctxWay.getMaxspeed() / 3.6f;
+    double speedLimit = rc.expressionContextWay.getMaxspeed() / 3.6f;
     if (speedLimit > 0) {
       maxSpeed = Math.min(maxSpeed, speedLimit);
     }

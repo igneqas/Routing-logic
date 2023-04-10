@@ -1,4 +1,4 @@
-package com.routerbackend.pollution;
+package com.routerbackend.extradata.pollution;
 
 public class RadiusAndWeight
 {

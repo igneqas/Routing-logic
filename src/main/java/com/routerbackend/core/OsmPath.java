@@ -159,18 +159,18 @@ abstract class OsmPath implements OsmLinkHolder {
     boolean isReverse = link.isReverse(sourceNode);
 
     // evaluate the way tags
-    rc.expctxWay.evaluate(rc.inverseDirection ^ isReverse, description);
+    rc.expressionContextWay.evaluate(rc.inverseDirection ^ isReverse, description);
 
 
     // calculate the costfactor inputs
-    float costfactor = rc.expctxWay.getCostfactor();
-    boolean isTrafficBackbone = cost == 0 && rc.expctxWay.getIsTrafficBackbone() > 0.f;
+    float costfactor = rc.expressionContextWay.getCostfactor();
+    boolean isTrafficBackbone = cost == 0 && rc.expressionContextWay.getIsTrafficBackbone() > 0.f;
     int lastpriorityclassifier = priorityclassifier;
-    priorityclassifier = (int) rc.expctxWay.getPriorityClassifier();
+    priorityclassifier = (int) rc.expressionContextWay.getPriorityClassifier();
 
     // *** add initial cost if the classifier changed
-    float newClassifier = rc.expctxWay.getInitialClassifier();
-    float newInitialCost = rc.expctxWay.getInitialcost();
+    float newClassifier = rc.expressionContextWay.getInitialClassifier();
+    float newInitialCost = rc.expressionContextWay.getInitialcost();
     float classifierDiff = newClassifier - lastClassifier;
     if (newClassifier != 0. && lastClassifier != 0. && (classifierDiff > 0.0005 || classifierDiff < -0.0005)) {
       float initialcost = rc.inverseDirection ? lastInitialCost : newInitialCost;
@@ -189,7 +189,7 @@ abstract class OsmPath implements OsmLinkHolder {
     lastInitialCost = newInitialCost;
 
     // *** destination logic: no destination access in between
-    int classifiermask = (int) rc.expctxWay.getClassifierMask();
+    int classifiermask = (int) rc.expressionContextWay.getClassifierMask();
     boolean newDestination = (classifiermask & 64) != 0;
     boolean oldDestination = getBit(IS_ON_DESTINATION_BIT);
     if (getBit(PATH_START_BIT)) {
@@ -334,7 +334,7 @@ abstract class OsmPath implements OsmLinkHolder {
       if (rc.countTraffic) {
         int minDist = (int) rc.trafficSourceMinDist;
         int cost2 = cost < minDist ? minDist : cost;
-        traffic += dist * rc.expctxWay.getTrafficSourceDensity() * Math.pow(cost2 / 10000.f, rc.trafficSourceExponent);
+        traffic += dist * rc.expressionContextWay.getTrafficSourceDensity() * Math.pow(cost2 / 10000.f, rc.trafficSourceExponent);
       }
 
       // compute kinematic
@@ -349,7 +349,7 @@ abstract class OsmPath implements OsmLinkHolder {
         message.lon = lon2;
         message.lat = lat2;
         message.ele = originEle2;
-        message.wayKeyValues = rc.expctxWay.getKeyValueDescription(isReverse, description);
+        message.wayKeyValues = rc.expressionContextWay.getKeyValueDescription(isReverse, description);
       }
 
       if (stopAtEndpoint) {

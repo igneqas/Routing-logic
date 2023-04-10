@@ -1,4 +1,4 @@
-package com.routerbackend.outgoingrequest;
+package com.routerbackend.requesthandling.outgoingrequest;
 
 import org.json.JSONObject;
 

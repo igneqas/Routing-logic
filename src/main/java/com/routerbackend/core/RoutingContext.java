@@ -29,8 +29,8 @@ public final class RoutingContext {
 
   public String rawTrackPath;
 
-  public BExpressionContextWay expctxWay;
-  public BExpressionContextNode expctxNode;
+  public BExpressionContextWay expressionContextWay;
+  public BExpressionContextNode expressionContextNode;
 
   public GeometryDecoder geometryDecoder = new GeometryDecoder();
 
@@ -80,7 +80,7 @@ public final class RoutingContext {
   }
 
   public void initModel() {
-    pm.init(expctxWay, expctxNode, keyValues);
+    pm.init(expressionContextWay, expressionContextNode, keyValues);
   }
 
   public long getKeyValueChecksum() {
@@ -94,14 +94,14 @@ public final class RoutingContext {
   }
 
   public void readGlobalConfig() {
-    BExpressionContext expctxGlobal = expctxWay; // just one of them...
+    BExpressionContext expctxGlobal = expressionContextWay; // just one of them...
 
     if (keyValues != null) {
       // add parameter to context
       for (Map.Entry<String, String> e : keyValues.entrySet()) {
         float f = Float.parseFloat(e.getValue());
-        expctxWay.setVariableValue(e.getKey(), f, true);
-        expctxNode.setVariableValue(e.getKey(), f, true);
+        expressionContextWay.setVariableValue(e.getKey(), f, true);
+        expressionContextNode.setVariableValue(e.getKey(), f, true);
       }
     }
 
