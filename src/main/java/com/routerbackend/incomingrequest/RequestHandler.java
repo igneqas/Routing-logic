@@ -1,11 +1,10 @@
-package com.routerbackend.request;
+package com.routerbackend.incomingrequest;
 
 import com.routerbackend.core.OsmNodeNamed;
 import com.routerbackend.core.OsmTrack;
 import com.routerbackend.core.RoutingContext;
 import com.routerbackend.pollution.PollutionDataHandler;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import com.routerbackend.traffic.TrafficDataHandler;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +31,7 @@ import java.util.Objects;
  * {@code http://localhost:17777/brouter?lonlats=1.1,1.2|2.1,2.2|3.1,3.2|4.1,4.2&nogos=-1.1,-1.2,1|-2.1,-2.2,2&profile=shortest&alternativeidx=1&format=kml&trackname=Ride&pois=1.1,2.1,Barner Bar}
  */
 
-public class RequestHandler extends IRequestHandler {
+public class RequestHandler implements IRequestHandler {
 
   @Override
   public RoutingContext readRoutingContext(String profile, String alternativeIdx) {
@@ -42,11 +41,10 @@ public class RequestHandler extends IRequestHandler {
 
     if(Objects.equals(profile, "pollution-free")) {
       routingContext.setProfileName("safety");
-      String noGos = PollutionDataHandler.getPollutionData();
-      System.out.println(noGos);
-      List<OsmNodeNamed> noGoList = readNoGoList(noGos);
-      RoutingContext.prepareNoGoPoints(noGoList);
-      routingContext.nogopoints = noGoList;
+      String rawNoGoData = PollutionDataHandler.getPollutionData();
+      rawNoGoData += TrafficDataHandler.getTrafficData();
+      System.out.println(rawNoGoData);
+      routingContext.noGoPoints = readNoGoList(rawNoGoData);
     }
 
     return routingContext;
@@ -117,45 +115,6 @@ public class RequestHandler extends IRequestHandler {
     return result;
   }
 
-  @Override
-  public String getMimeType() {
-    // default
-    String result = "text/plain";
-
-    // optional, may be null
-    String format = params.get("format");
-    if (format != null) {
-      if ("gpx".equals(format)) {
-        result = "application/gpx+xml";
-      } else if ("kml".equals(format)) {
-        result = "application/vnd.google-earth.kml+xml";
-      } else if ("geojson".equals(format)) {
-        result = "application/vnd.geo+json";
-      } else if ("csv".equals(format)) {
-        result = "text/tab-separated-values";
-      }
-    }
-
-    return result;
-  }
-
-  @Override
-  public String getFileName() {
-    String fileName = null;
-    String format = params.get("format");
-    String trackName = getTrackName();
-
-    if (format != null) {
-      fileName = (trackName == null ? "brouter" : trackName) + "." + format;
-    }
-
-    return fileName;
-  }
-
-  private String getTrackName() {
-    return params.get("trackname") == null ? null : params.get("trackname").replaceAll("[^a-zA-Z0-9 \\._\\-]+", "");
-  }
-
   private static OsmNodeNamed readPosition(String vlon, String vlat, String name) {
     if (vlon == null) throw new IllegalArgumentException("lon " + name + " not found in input");
     if (vlat == null) throw new IllegalArgumentException("lat " + name + " not found in input");
@@ -198,49 +157,12 @@ public class RequestHandler extends IRequestHandler {
 
   private static OsmNodeNamed readNoGo(double longitude, double latitude, int radius, double noGoWeight) {
     OsmNodeNamed node = new OsmNodeNamed();
-    node.name = "nogo" + radius;
+    node.name = "nogo";
     node.longitude = (int) ((longitude + 180.) * 1000000. + 0.5);
     node.latitude = (int) ((latitude + 90.) * 1000000. + 0.5);
     node.isNoGo = true;
     node.noGoWeight = noGoWeight;
+    node.radius = radius;
     return node;
   }
-
-//  private List<OsmNodeNamed> readNogoPolygons() {
-//    List<OsmNodeNamed> result = new ArrayList<OsmNodeNamed>();
-//    parseNogoPolygons(params.get("polylines"), result, false);
-//    parseNogoPolygons(params.get("polygons"), result, true);
-//    return result.size() > 0 ? result : null;
-//  }
-//
-//  private static void parseNogoPolygons(String polygons, List<OsmNodeNamed> result, boolean closed) {
-//    if (polygons != null) {
-//      String[] polygonList = polygons.split("\\|");
-//      for (int i = 0; i < polygonList.length; i++) {
-//        String[] lonLatList = polygonList[i].split(",");
-//        if (lonLatList.length > 1) {
-//          OsmNogoPolygon polygon = new OsmNogoPolygon(closed);
-//          int j;
-//          for (j = 0; j < 2 * (lonLatList.length / 2) - 1; ) {
-//            String slon = lonLatList[j++];
-//            String slat = lonLatList[j++];
-//            int lon = (int) ((Double.parseDouble(slon) + 180.) * 1000000. + 0.5);
-//            int lat = (int) ((Double.parseDouble(slat) + 90.) * 1000000. + 0.5);
-//            polygon.addVertex(lon, lat);
-//          }
-//
-//          String nogoWeight = "NaN";
-//          if (j < lonLatList.length) {
-//            nogoWeight = lonLatList[j];
-//          }
-//          polygon.nogoWeight = Double.parseDouble(nogoWeight);
-//
-//          if (polygon.points.size() > 0) {
-//            polygon.calcBoundingCircle();
-//            result.add(polygon);
-//          }
-//        }
-//      }
-//    }
-//  }
 }

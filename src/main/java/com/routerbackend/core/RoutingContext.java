@@ -183,7 +183,7 @@ public final class RoutingContext {
   }
 
   public List<OsmNodeNamed> poipoints;
-  public List<OsmNodeNamed> nogopoints = null;
+  public List<OsmNodeNamed> noGoPoints = null;
   private List<OsmNodeNamed> nogopoints_all = null; // full list not filtered for wayoints-in-nogos
   private List<OsmNodeNamed> keepnogopoints = null;
   private OsmNodeNamed pendingEndpoint = null;
@@ -232,30 +232,11 @@ public final class RoutingContext {
   public double defaultC_r;
   public double bikerPower;
 
-  public static void prepareNoGoPoints(List<OsmNodeNamed> noGos) {
-    for (OsmNodeNamed noGo : noGos) {
-      if (noGo instanceof OsmNogoPolygon) {
-        continue;
-      }
-      String s = noGo.name;
-      int idx = s.indexOf(' ');
-      if (idx > 0) s = s.substring(0, idx);
-      int ir = 20; // default radius
-      if (s.length() > 4) {
-        try {
-          ir = Integer.parseInt(s.substring(4));
-        } catch (Exception e) { /* ignore */ }
-      }
-      // Radius of the nogo point in meters
-      noGo.radius = ir;
-    }
-  }
-
   /**
    * restore the full nogolist previously saved by cleanNogoList
    */
   public void restoreNogoList() {
-    nogopoints = nogopoints_all;
+    noGoPoints = nogopoints_all;
   }
 
   /**
@@ -265,10 +246,10 @@ public final class RoutingContext {
    * @return true if all wayoints are all in the same (full-weigth) nogo area (triggering bee-line-mode)
    */
   public void cleanNogoList(List<OsmNode> waypoints) {
-    nogopoints_all = nogopoints;
-    if (nogopoints == null) return;
+    nogopoints_all = noGoPoints;
+    if (noGoPoints == null) return;
     List<OsmNodeNamed> nogos = new ArrayList<OsmNodeNamed>();
-    for (OsmNodeNamed nogo : nogopoints) {
+    for (OsmNodeNamed nogo : noGoPoints) {
       boolean goodGuy = true;
       for (OsmNode wp : waypoints) {
         if (wp.calcDistance(nogo) < nogo.radius
@@ -281,11 +262,11 @@ public final class RoutingContext {
       }
       if (goodGuy) nogos.add(nogo);
     }
-    nogopoints = nogos.isEmpty() ? null : nogos;
+    noGoPoints = nogos.isEmpty() ? null : nogos;
   }
 
   public void checkMatchedWaypointAgainstNogos(List<MatchedWaypoint> matchedWaypoints) {
-    if (nogopoints == null) return;
+    if (noGoPoints == null) return;
     List<MatchedWaypoint> newMatchedWaypoints = new ArrayList<>();
     int theSize = matchedWaypoints.size();
     int removed = 0;
@@ -295,7 +276,7 @@ public final class RoutingContext {
       MatchedWaypoint mwp = matchedWaypoints.get(i);
       boolean isInsideNogo = false;
       OsmNode wp = mwp.crosspoint;
-      for (OsmNodeNamed nogo : nogopoints) {
+      for (OsmNodeNamed nogo : noGoPoints) {
         if (wp.calcDistance(nogo) < nogo.radius
           && (!(nogo instanceof OsmNogoPolygon)
           || (((OsmNogoPolygon) nogo).isClosed
@@ -338,9 +319,9 @@ public final class RoutingContext {
   }
 
   public boolean allInOneNogo(List<OsmNode> waypoints) {
-    if (nogopoints == null) return false;
+    if (noGoPoints == null) return false;
     boolean allInTotal = false;
-    for (OsmNodeNamed nogo : nogopoints) {
+    for (OsmNodeNamed nogo : noGoPoints) {
       boolean allIn = Double.isNaN(nogo.noGoWeight);
       for (OsmNode wp : waypoints) {
         int dist = wp.calcDistance(nogo);
@@ -360,9 +341,9 @@ public final class RoutingContext {
 
   public long[] getNogoChecksums() {
     long[] cs = new long[3];
-    int n = nogopoints == null ? 0 : nogopoints.size();
+    int n = noGoPoints == null ? 0 : noGoPoints.size();
     for (int i = 0; i < n; i++) {
-      OsmNodeNamed nogo = nogopoints.get(i);
+      OsmNodeNamed nogo = noGoPoints.get(i);
       cs[0] += nogo.longitude;
       cs[1] += nogo.latitude;
       // 10 is an arbitrary constant to get sub-integer precision in the checksum
@@ -376,10 +357,10 @@ public final class RoutingContext {
   }
 
   public void setWaypoint(OsmNodeNamed wp, OsmNodeNamed pendingEndpoint, boolean endpoint) {
-    keepnogopoints = nogopoints;
-    nogopoints = new ArrayList<OsmNodeNamed>();
-    nogopoints.add(wp);
-    if (keepnogopoints != null) nogopoints.addAll(keepnogopoints);
+    keepnogopoints = noGoPoints;
+    noGoPoints = new ArrayList<OsmNodeNamed>();
+    noGoPoints.add(wp);
+    if (keepnogopoints != null) noGoPoints.addAll(keepnogopoints);
     isEndpoint = endpoint;
     this.pendingEndpoint = pendingEndpoint;
   }
@@ -387,7 +368,7 @@ public final class RoutingContext {
   public boolean checkPendingEndpoint() {
     if (pendingEndpoint != null) {
       isEndpoint = true;
-      nogopoints.set(0, pendingEndpoint);
+      noGoPoints.set(0, pendingEndpoint);
       pendingEndpoint = null;
       return true;
     }
@@ -395,7 +376,7 @@ public final class RoutingContext {
   }
 
   public void unsetWaypoint() {
-    nogopoints = keepnogopoints;
+    noGoPoints = keepnogopoints;
     pendingEndpoint = null;
     isEndpoint = false;
   }
@@ -410,9 +391,9 @@ public final class RoutingContext {
 
     shortestmatch = false;
 
-    if (nogopoints != null && !nogopoints.isEmpty() && d > 0.) {
-      for (int ngidx = 0; ngidx < nogopoints.size(); ngidx++) {
-        OsmNodeNamed nogo = nogopoints.get(ngidx);
+    if (noGoPoints != null && !noGoPoints.isEmpty() && d > 0.) {
+      for (int ngidx = 0; ngidx < noGoPoints.size(); ngidx++) {
+        OsmNodeNamed nogo = noGoPoints.get(ngidx);
         double x1 = (lon1 - nogo.longitude) * dlon2m;
         double y1 = (lat1 - nogo.latitude) * dlat2m;
         double x2 = (lon2 - nogo.longitude) * dlon2m;

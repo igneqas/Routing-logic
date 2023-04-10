@@ -1,7 +1,10 @@
 package com.routerbackend.pollution;
 
+import com.routerbackend.outgoingrequest.HttpRequestHandler;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.time.Instant;
 
 public class PollutionDataHandler {
 
@@ -15,7 +18,9 @@ public class PollutionDataHandler {
 
     private static String getVilniusPollutionData()
     {
-        JSONObject pollutionData = PollutionRequestHandler.getPollutionRequestResponse();
+        long unixTime = Instant.now().getEpochSecond();
+        String url = "https://atviras.vplanas.lt/arcgis/rest/services/Aplinkosauga/Oro_tarsa/MapServer/0/query?3D1&outFields=*&returnGeometry=false&outSR=4326&f=json&where=(1%20%3D%201)%20AND%20(" + unixTime + "%3D" + unixTime + ")";
+        JSONObject pollutionData = HttpRequestHandler.getHttpRequestResponse(url);
         JSONArray sensorData = pollutionData.getJSONArray("features");
         return PollutionDataResolver.resolveVilniusPollution(sensorData);
     }

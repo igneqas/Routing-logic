@@ -77,22 +77,4 @@ public class OsmNodeNamed extends OsmNode {
     }
     return 2 * halfDistanceWithin;
   }
-
-  public static OsmNodeNamed decodeNogo(String s) {
-    OsmNodeNamed n = new OsmNodeNamed();
-    int idx1 = s.indexOf(',');
-    n.longitude = Integer.parseInt(s.substring(0, idx1));
-    int idx2 = s.indexOf(',', idx1 + 1);
-    n.latitude = Integer.parseInt(s.substring(idx1 + 1, idx2));
-    int idx3 = s.indexOf(',', idx2 + 1);
-    if (idx3 == -1) {
-      n.name = s.substring(idx2 + 1);
-      n.noGoWeight = Double.NaN;
-    } else {
-      n.name = s.substring(idx2 + 1, idx3);
-      n.noGoWeight = Double.parseDouble(s.substring(idx3 + 1));
-    }
-    n.isNoGo = true;
-    return n;
-  }
 }
