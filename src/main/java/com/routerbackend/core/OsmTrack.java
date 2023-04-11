@@ -53,9 +53,6 @@ public final class OsmTrack {
 
   private VoiceHintList voiceHints;
 
-  public String message = null;
-  public List<String> messageList = null;
-
   public String name = "unset";
 
   protected List<MatchedWaypoint> matchedWaypoints;
@@ -204,68 +201,6 @@ public final class OsmTrack {
       }
     }
     return res;
-  }
-
-  public static OsmTrack readBinary(String filename, OsmNodeNamed newEp, long[] nogoChecksums, long profileChecksum, StringBuilder debugInfo) {
-    OsmTrack t = null;
-    if (filename != null) {
-      File f = new File(filename);
-      if (f.exists()) {
-        try {
-          DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(f)));
-          MatchedWaypoint ep = MatchedWaypoint.readFromStream(dis);
-          int dlon = ep.waypoint.longitude - newEp.longitude;
-          int dlat = ep.waypoint.latitude - newEp.latitude;
-          boolean targetMatch = dlon < 20 && dlon > -20 && dlat < 20 && dlat > -20;
-          if (debugInfo != null) {
-            debugInfo.append("target-delta = " + dlon + "/" + dlat + " targetMatch=" + targetMatch);
-          }
-          if (targetMatch) {
-            t = new OsmTrack();
-            t.endPoint = ep;
-            int n = dis.readInt();
-            OsmPathElement last_pe = null;
-            for (int i = 0; i < n; i++) {
-              OsmPathElement pe = OsmPathElement.readFromStream(dis);
-              pe.origin = last_pe;
-              last_pe = pe;
-              t.nodes.add(pe);
-            }
-            t.cost = last_pe.cost;
-            t.buildMap();
-
-            // check cheecksums, too
-            long[] al = new long[3];
-            long pchecksum = 0;
-            try {
-              al[0] = dis.readLong();
-              al[1] = dis.readLong();
-              al[2] = dis.readLong();
-            } catch (EOFException eof) { /* kind of expected */ }
-            try {
-              t.isDirty = dis.readBoolean();
-            } catch (EOFException eof) { /* kind of expected */ }
-            try {
-              pchecksum = dis.readLong();
-            } catch (EOFException eof) { /* kind of expected */ }
-            boolean nogoCheckOk = Math.abs(al[0] - nogoChecksums[0]) <= 20
-              && Math.abs(al[1] - nogoChecksums[1]) <= 20
-              && Math.abs(al[2] - nogoChecksums[2]) <= 20;
-            boolean profileCheckOk = pchecksum == profileChecksum;
-
-            if (debugInfo != null) {
-              debugInfo.append(" nogoCheckOk=" + nogoCheckOk + " profileCheckOk=" + profileCheckOk);
-              debugInfo.append(" al=" + formatLongs(al) + " nogoChecksums=" + formatLongs(nogoChecksums));
-            }
-            if (!(nogoCheckOk && profileCheckOk)) return null;
-          }
-          dis.close();
-        } catch (Exception e) {
-          throw new RuntimeException("Exception reading rawTrack: " + e);
-        }
-      }
-    }
-    return t;
   }
 
   private static String formatLongs(long[] al) {
@@ -558,12 +493,6 @@ public final class OsmTrack {
     return time;
   }
 
-  SimpleDateFormat TIMESTAMP_FORMAT;
-
-  public String getFormattedEnergy() {
-    return format1(energy / 3600000.) + "kwh";
-  }
-
   private static String formatILon(int ilon) {
     return formatPos(ilon - 180000000);
   }
@@ -593,29 +522,6 @@ public final class OsmTrack {
     String s = "" + (long) (n * 10 + 0.5);
     int len = s.length();
     return s.substring(0, len - 1) + "." + s.charAt(len - 1);
-  }
-
-  public void dumpMessages(String filename, RoutingContext rc) throws Exception {
-    BufferedWriter bw = filename == null ? null : new BufferedWriter(new FileWriter(filename));
-    writeMessages(bw, rc);
-  }
-
-  public void writeMessages(BufferedWriter bw, RoutingContext rc) throws Exception {
-    dumpLine(bw, MESSAGES_HEADER);
-    for (String m : aggregateMessages()) {
-      dumpLine(bw, m);
-    }
-    if (bw != null)
-      bw.close();
-  }
-
-  private void dumpLine(BufferedWriter bw, String s) throws Exception {
-    if (bw == null) {
-      System.out.println(s);
-    } else {
-      bw.write(s);
-      bw.write("\n");
-    }
   }
 
   public OsmPathElementHolder getFromDetourMap(long id) {

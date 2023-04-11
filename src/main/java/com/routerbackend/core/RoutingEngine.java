@@ -13,11 +13,9 @@ import java.util.*;
 public class RoutingEngine extends Thread {
   private NodesCache nodesCache;
   private SortedHeap<OsmPath> openSet = new SortedHeap<>();
-  private boolean finished = false;
 
-  protected List<OsmNodeNamed> waypoints = null;
+  protected List<OsmNodeNamed> waypoints;
   protected List<MatchedWaypoint> matchedWaypoints;
-  private int linksProcessed = 0;
 
   private int nodeLimit; // used for target island search
   private int MAXNODES_ISLAND_CHECK = 500;
@@ -34,7 +32,6 @@ public class RoutingEngine extends Thread {
   private volatile boolean terminated;
 
   protected File segmentDir = new File("src/main/java/com/data/segments");
-  private Writer infoLogWriter;
   protected RoutingContext routingContext;
 
   public double airDistanceCostFactor;
@@ -45,8 +42,6 @@ public class RoutingEngine extends Thread {
   private long startTime;
   private long maxRunningTime;
   public SearchBoundary boundary;
-
-  private Object[] extract;
 
   private boolean directWeaving = !Boolean.getBoolean("disableDirectWeaving");
 
@@ -63,94 +58,32 @@ public class RoutingEngine extends Thread {
       OsmTrack[] refTracks = new OsmTrack[sectionCount]; // used ways for alternatives
       OsmTrack[] lastTracks = new OsmTrack[sectionCount];
       OsmTrack track;
-      ArrayList<String> messageList = new ArrayList<>();
       for (int i = 0; ; i++) {
         track = findTrack(refTracks, lastTracks);
-        track.message = "track-length = " + track.distance + " filtered ascend = " + track.ascend
-          + " plain-ascend = " + track.plainAscend + " cost=" + track.cost;
-        if (track.energy != 0) {
-          track.message += " energy=" + track.getFormattedEnergy() + " time=" + track.getFormattedTime2();
-        }
         track.name = "brouter_" + routingContext.getProfileName() + "_" + i;
-
-        messageList.add(track.message);
-        track.messageList = messageList;
-//        if (outfileBase != null) {
-//          String filename = outfileBase + i + ".gpx";
-//          OsmTrack oldTrack = new OsmTrack();
-//          oldTrack.readGpx(filename);
-//          if (track.equalsTrack(oldTrack)) {
-//            continue;
-//          }
-//          oldTrack = null;
-//          track.writeGpx(filename);
-//          foundTrack = track;
-//          alternativeIndex = i;
-//          outfile = filename;
-//        } else {
           if (i == routingContext.getAlternativeIdx(0, 3)) {
-            if ("CSV".equals(System.getProperty("reportFormat"))) {
-              track.dumpMessages(null, routingContext);
-            } else {
-//              if (!quite) {
-//                System.out.println(track.formatAsGpx());
-//              }
-            }
             foundTrack = track;
           } else {
             continue;
           }
-//        }
-//        if (logfileBase != null) {
-//          String logfilename = logfileBase + i + ".csv";
-//          track.dumpMessages(logfilename, routingContext);
-//        }
         break;
       }
-      long endTime = System.currentTimeMillis();
-//      logInfo("execution time = " + (endTime - startTime0) / 1000. + " seconds");
     } catch (IllegalArgumentException e) {
 //      logException(e);
     } catch (Exception e) {
 //      logException(e);
 //      logThrowable(e);
     } catch (Error e) {
-//      cleanOnOOM();
 //      logException(e);
 //      logThrowable(e);
     } finally {
-//      if (hasInfo() && routingContext.expctxWay != null) {
-//        logInfo("expression cache stats=" + routingContext.expctxWay.cacheStats());
-//      }
-
       ProfileActions.releaseProfile(routingContext);
-
       if (nodesCache != null) {
-//        if (hasInfo() && nodesCache != null) {
-//          logInfo("NodesCache status before close=" + nodesCache.formatStatus());
-//        }
         nodesCache.close();
         nodesCache = null;
       }
+
       openSet.clear();
-      finished = true; // this signals termination to outside
-
-//      if (infoLogWriter != null) {
-//        try {
-//          infoLogWriter.close();
-//        } catch (Exception e) {
-//        }
-//        infoLogWriter = null;
-//      }
-//
-//      if (stackSampler != null) {
-//        try {
-//          stackSampler.close();
-//        } catch (Exception e) {
-//        }
-//        stackSampler = null;
-//      }
-
     }
   }
 
@@ -268,53 +201,6 @@ public class RoutingEngine extends Thread {
 
   }
 
-  private void logException(Throwable t) {
-    errorMessage = t instanceof RuntimeException ? t.getMessage() : t.toString();
-//    logInfo("Error (linksProcessed=" + linksProcessed + " open paths: " + openSet.getSize() + "): " + errorMessage);
-  }
-
-
-  public void doSearch() {
-    try {
-      MatchedWaypoint seedPoint = new MatchedWaypoint();
-      seedPoint.waypoint = waypoints.get(0);
-      List<MatchedWaypoint> listOne = new ArrayList<MatchedWaypoint>();
-      listOne.add(seedPoint);
-      matchWaypointsToNodes(listOne);
-
-      findTrack("seededSearch", seedPoint, null, null, null, false);
-    } catch (IllegalArgumentException e) {
-      logException(e);
-    } catch (Exception e) {
-      logException(e);
-//      logThrowable(e);
-    } catch (Error e) {
-      cleanOnOOM();
-      logException(e);
-//      logThrowable(e);
-    } finally {
-      ProfileActions.releaseProfile(routingContext);
-      if (nodesCache != null) {
-        nodesCache.close();
-        nodesCache = null;
-      }
-      openSet.clear();
-      finished = true; // this signals termination to outside
-
-      if (infoLogWriter != null) {
-        try {
-          infoLogWriter.close();
-        } catch (Exception e) {
-        }
-        infoLogWriter = null;
-      }
-    }
-  }
-
-  public void cleanOnOOM() {
-    terminate();
-  }
-
   private OsmTrack findTrack(OsmTrack[] refTracks, OsmTrack[] lastTracks) {
     for (; ; ) {
       try {
@@ -328,42 +214,19 @@ public class RoutingEngine extends Thread {
   }
 
   private OsmTrack tryFindTrack(OsmTrack[] refTracks, OsmTrack[] lastTracks) {
-    OsmTrack totaltrack = new OsmTrack();
-    int nUnmatched = waypoints.size();
-    boolean hasDirectRouting = false;
-
-    for (OsmNodeNamed wp : waypoints) {
-//      if (hasInfo()) logInfo("wp=" + wp + (wp.direct ? " direct" : ""));
-      if (wp.direct) hasDirectRouting = true;
-    }
-
-    // check for a track for that target
-    OsmTrack nearbyTrack = null;
-    if (!hasDirectRouting && lastTracks[waypoints.size() - 2] == null) {
-      StringBuilder debugInfo = /*hasInfo() ? new StringBuilder() :*/ null;
-      nearbyTrack = OsmTrack.readBinary(routingContext.rawTrackPath, waypoints.get(waypoints.size() - 1), routingContext.getNogoChecksums(), routingContext.profileTimestamp, debugInfo);
-      if (nearbyTrack != null) {
-        nUnmatched--;
-      }
-//      if (hasInfo()) {
-//        boolean found = nearbyTrack != null;
-//        boolean dirty = found && nearbyTrack.isDirty;
-//        logInfo("read referenceTrack, found=" + found + " dirty=" + dirty + " " + debugInfo);
-//      }
-    }
-
+    OsmTrack fullTrack = new OsmTrack();
     if (matchedWaypoints == null) { // could exist from the previous alternative level
-      matchedWaypoints = new ArrayList<MatchedWaypoint>();
-      for (int i = 0; i < nUnmatched; i++) {
-        MatchedWaypoint mwp = new MatchedWaypoint();
-        mwp.waypoint = waypoints.get(i);
-        mwp.name = waypoints.get(i).name;
-        mwp.direct = waypoints.get(i).direct;
-        matchedWaypoints.add(mwp);
+      matchedWaypoints = new ArrayList<>();
+      for (OsmNodeNamed waypoint : waypoints) {
+        MatchedWaypoint matchedWaypoint = new MatchedWaypoint();
+        matchedWaypoint.waypoint = waypoint;
+        matchedWaypoint.name = waypoint.name;
+        matchedWaypoint.direct = waypoint.direct;
+        matchedWaypoints.add(matchedWaypoint);
       }
-      matchWaypointsToNodes(matchedWaypoints);
 
-      routingContext.checkMatchedWaypointAgainstNogos(matchedWaypoints);
+      matchWaypointsToNodes(matchedWaypoints);
+      routingContext.checkMatchedWaypointAgainstNoGos(matchedWaypoints);
 
       // detect target islands: restricted search in inverse direction
       routingContext.inverseDirection = !routingContext.inverseRouting;
@@ -372,23 +235,19 @@ public class RoutingEngine extends Thread {
         nodeLimit = MAXNODES_ISLAND_CHECK;
         if (matchedWaypoints.get(i).direct) continue;
         if (routingContext.inverseRouting) {
-          OsmTrack seg = findTrack("start-island-check", matchedWaypoints.get(i), matchedWaypoints.get(i + 1), null, null, false);
-          if (seg == null && nodeLimit > 0) {
+          OsmTrack segment = findTrack("start-island-check", matchedWaypoints.get(i), matchedWaypoints.get(i + 1), null, null, false);
+          if (segment == null && nodeLimit > 0) {
             throw new IllegalArgumentException("start island detected for section " + i);
           }
         } else {
-          OsmTrack seg = findTrack("target-island-check", matchedWaypoints.get(i + 1), matchedWaypoints.get(i), null, null, false);
-          if (seg == null && nodeLimit > 0) {
+          OsmTrack segment = findTrack("target-island-check", matchedWaypoints.get(i + 1), matchedWaypoints.get(i), null, null, false);
+          if (segment == null && nodeLimit > 0) {
             throw new IllegalArgumentException("target island detected for section " + i);
           }
         }
       }
       routingContext.inverseDirection = false;
       nodeLimit = 0;
-
-      if (nearbyTrack != null) {
-        matchedWaypoints.add(nearbyTrack.endPoint);
-      }
     }
 
     for (int i = 0; i < matchedWaypoints.size() - 1; i++) {
@@ -397,47 +256,47 @@ public class RoutingEngine extends Thread {
         refTracks[i].addNodes(lastTracks[i]);
       }
 
-      OsmTrack seg;
-      int wptIndex;
+      OsmTrack segment;
+      int waypointIndex;
       if (routingContext.inverseRouting) {
         routingContext.inverseDirection = true;
-        seg = searchTrack(matchedWaypoints.get(i + 1), matchedWaypoints.get(i), null, refTracks[i]);
+        segment = searchTrack(matchedWaypoints.get(i + 1), matchedWaypoints.get(i), null, refTracks[i]);
         routingContext.inverseDirection = false;
-        wptIndex = i + 1;
+        waypointIndex = i + 1;
       } else {
-        seg = searchTrack(matchedWaypoints.get(i), matchedWaypoints.get(i + 1), i == matchedWaypoints.size() - 2 ? nearbyTrack : null, refTracks[i]);
-        wptIndex = i;
+        segment = searchTrack(matchedWaypoints.get(i), matchedWaypoints.get(i + 1), null, refTracks[i]);
+        waypointIndex = i;
       }
-      if (seg == null)
+      if (segment == null)
         return null;
 
       boolean changed = false;
       if (routingContext.correctMisplacedViaPoints && !matchedWaypoints.get(i).direct) {
-        changed = snappPathConnection(totaltrack, seg, routingContext.inverseRouting ? matchedWaypoints.get(i + 1) : matchedWaypoints.get(i));
+        changed = snappPathConnection(fullTrack, segment, routingContext.inverseRouting ? matchedWaypoints.get(i + 1) : matchedWaypoints.get(i));
       }
-      if (wptIndex > 0)
-        matchedWaypoints.get(wptIndex).indexInTrack = totaltrack.nodes.size() - 1;
+      if (waypointIndex > 0)
+        matchedWaypoints.get(waypointIndex).indexInTrack = fullTrack.nodes.size() - 1;
 
-      totaltrack.appendTrack(seg);
-      lastTracks[i] = seg;
+      fullTrack.appendTrack(segment);
+      lastTracks[i] = segment;
     }
 
-    postElevationCheck(totaltrack);
+    postElevationCheck(fullTrack);
 
-    recalcTrack(totaltrack);
+    recalcTrack(fullTrack);
 
-    matchedWaypoints.get(matchedWaypoints.size() - 1).indexInTrack = totaltrack.nodes.size() - 1;
-    totaltrack.matchedWaypoints = matchedWaypoints;
-    totaltrack.processVoiceHints(routingContext);
-    totaltrack.prepareSpeedProfile(routingContext);
+    matchedWaypoints.get(matchedWaypoints.size() - 1).indexInTrack = fullTrack.nodes.size() - 1;
+    fullTrack.matchedWaypoints = matchedWaypoints;
+    fullTrack.processVoiceHints(routingContext);
+    fullTrack.prepareSpeedProfile(routingContext);
 
-    totaltrack.showTime = routingContext.showTime;
-    totaltrack.params = routingContext.keyValues;
+    fullTrack.showTime = routingContext.showTime;
+    fullTrack.params = routingContext.keyValues;
 
     if (routingContext.poipoints != null)
-      totaltrack.pois = routingContext.poipoints;
-    totaltrack.matchedWaypoints = matchedWaypoints;
-    return totaltrack;
+      fullTrack.pois = routingContext.poipoints;
+    fullTrack.matchedWaypoints = matchedWaypoints;
+    return fullTrack;
   }
 
   // check for way back on way point
@@ -730,15 +589,12 @@ public class RoutingEngine extends Thread {
         n.setEnergy(n.getEnergy() + (float) addEnergy);
       }
     }
-
-//    logInfo("track-length total = " + t.distance);
-//    logInfo("filtered ascend = " + t.ascend);
   }
 
   // geometric position matching finding the nearest routable way-section
-  private void matchWaypointsToNodes(List<MatchedWaypoint> unmatchedWaypoints) {
+  private void matchWaypointsToNodes(List<MatchedWaypoint> matchedWaypoints) {
     resetCache(false);
-    nodesCache.matchWaypointsToNodes(unmatchedWaypoints, routingContext.waypointCatchingRange, islandNodePairs);
+    nodesCache.matchWaypointsToNodes(matchedWaypoints, routingContext.waypointCatchingRange, islandNodePairs);
   }
 
   private OsmTrack searchTrack(MatchedWaypoint startWp, MatchedWaypoint endWp, OsmTrack nearbyTrack, OsmTrack refTrack) {
@@ -858,9 +714,6 @@ public class RoutingEngine extends Thread {
 
 
   private void resetCache(boolean detailed) {
-//    if (hasInfo() && nodesCache != null) {
-//      logInfo("NodesCache status before reset=" + nodesCache.formatStatus());
-//    }
     long maxmem = routingContext.memoryClass * 1024L * 1024L; // in MB
 
     nodesCache = new NodesCache(segmentDir, routingContext.expressionContextWay, routingContext.forceSecondaryData, maxmem, nodesCache, detailed);
@@ -923,7 +776,7 @@ public class RoutingEngine extends Thread {
 
   private OsmTrack findTrack(String operationName, MatchedWaypoint startWp, MatchedWaypoint endWp, OsmTrack costCuttingTrack, OsmTrack refTrack, boolean fastPartialRecalc) {
     try {
-      List<OsmNode> wpts2 = new ArrayList<OsmNode>();
+      List<OsmNode> wpts2 = new ArrayList<>();
       if (startWp != null) wpts2.add(startWp.waypoint);
       if (endWp != null) wpts2.add(endWp.waypoint);
       routingContext.cleanNogoList(wpts2);
@@ -1111,7 +964,6 @@ public class RoutingEngine extends Thread {
         }
 
         nodesVisited++;
-        linksProcessed++;
 
         OsmLink currentLink = path.getLink();
         OsmNode sourceNode = path.getSourceNode();
@@ -1411,87 +1263,11 @@ public class RoutingEngine extends Thread {
     return track;
   }
 
-  public int getPathPeak() {
-    synchronized (openSet) {
-      return openSet.getPeakSize();
-    }
-  }
-
-  public int[] getOpenSet() {
-    if (extract == null) {
-      extract = new Object[500];
-    }
-
-    synchronized (openSet) {
-      if (guideTrack != null) {
-        List<OsmPathElement> nodes = guideTrack.nodes;
-        int[] res = new int[nodes.size() * 2];
-        int i = 0;
-        for (OsmPathElement n : nodes) {
-          res[i++] = n.getILon();
-          res[i++] = n.getILat();
-        }
-        return res;
-      }
-
-      int size = openSet.getExtract(extract);
-      int[] res = new int[size * 2];
-      for (int i = 0, j = 0; i < size; i++) {
-        OsmPath p = (OsmPath) extract[i];
-        extract[i] = null;
-        OsmNode n = p.getTargetNode();
-        res[j++] = n.longitude;
-        res[j++] = n.latitude;
-      }
-      return res;
-    }
-  }
-
-  public boolean isFinished() {
-    return finished;
-  }
-
-  public int getLinksProcessed() {
-    return linksProcessed;
-  }
-
-  public int getDistance() {
-    return foundTrack.distance;
-  }
-
-  public int getAscend() {
-    return foundTrack.ascend;
-  }
-
-  public int getPlainAscend() {
-    return foundTrack.plainAscend;
-  }
-
-  public String getTime() {
-    return foundTrack.getFormattedTime2();
-  }
-
   public OsmTrack getFoundTrack() {
     return foundTrack;
   }
 
-  public int getAlternativeIndex() {
-    return alternativeIndex;
-  }
-
-  public OsmTrack getFoundRawTrack() {
-    return foundRawTrack;
-  }
-
   public String getErrorMessage() {
     return errorMessage;
-  }
-
-  public void terminate() {
-    terminated = true;
-  }
-
-  public boolean isTerminated() {
-    return terminated;
   }
 }

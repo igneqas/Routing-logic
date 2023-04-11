@@ -94,7 +94,7 @@ public final class RoutingContext {
   }
 
   public void readGlobalConfig() {
-    BExpressionContext expctxGlobal = expressionContextWay; // just one of them...
+    BExpressionContext expressionContextGlobal = expressionContextWay;
 
     if (keyValues != null) {
       // add parameter to context
@@ -105,81 +105,81 @@ public final class RoutingContext {
       }
     }
 
-    setModel(expctxGlobal._modelClass);
+    setModel(expressionContextGlobal._modelClass);
 
-    downhillcostdiv = (int) expctxGlobal.getVariableValue("downhillcost", 0.f);
-    downhillcutoff = (int) (expctxGlobal.getVariableValue("downhillcutoff", 0.f) * 10000);
-    uphillcostdiv = (int) expctxGlobal.getVariableValue("uphillcost", 0.f);
-    uphillcutoff = (int) (expctxGlobal.getVariableValue("uphillcutoff", 0.f) * 10000);
+    downhillcostdiv = (int) expressionContextGlobal.getVariableValue("downhillcost", 0.f);
+    downhillcutoff = (int) (expressionContextGlobal.getVariableValue("downhillcutoff", 0.f) * 10000);
+    uphillcostdiv = (int) expressionContextGlobal.getVariableValue("uphillcost", 0.f);
+    uphillcutoff = (int) (expressionContextGlobal.getVariableValue("uphillcutoff", 0.f) * 10000);
     if (downhillcostdiv != 0) downhillcostdiv = 1000000 / downhillcostdiv;
     if (uphillcostdiv != 0) uphillcostdiv = 1000000 / uphillcostdiv;
-    carMode = 0.f != expctxGlobal.getVariableValue("validForCars", 0.f);
-    bikeMode = 0.f != expctxGlobal.getVariableValue("validForBikes", 0.f);
-    footMode = 0.f != expctxGlobal.getVariableValue("validForFoot", 0.f);
+    carMode = 0.f != expressionContextGlobal.getVariableValue("validForCars", 0.f);
+    bikeMode = 0.f != expressionContextGlobal.getVariableValue("validForBikes", 0.f);
+    footMode = 0.f != expressionContextGlobal.getVariableValue("validForFoot", 0.f);
 
-    waypointCatchingRange = expctxGlobal.getVariableValue("waypointCatchingRange", 250.f);
+    waypointCatchingRange = expressionContextGlobal.getVariableValue("waypointCatchingRange", 250.f);
 
     // turn-restrictions not used per default for foot profiles
-    considerTurnRestrictions = 0.f != expctxGlobal.getVariableValue("considerTurnRestrictions", footMode ? 0.f : 1.f);
+    considerTurnRestrictions = 0.f != expressionContextGlobal.getVariableValue("considerTurnRestrictions", footMode ? 0.f : 1.f);
 
-    correctMisplacedViaPoints = 0.f != expctxGlobal.getVariableValue("correctMisplacedViaPoints", 1.f);
-    correctMisplacedViaPointsDistance = expctxGlobal.getVariableValue("correctMisplacedViaPointsDistance", 40.f);
+    correctMisplacedViaPoints = 0.f != expressionContextGlobal.getVariableValue("correctMisplacedViaPoints", 1.f);
+    correctMisplacedViaPointsDistance = expressionContextGlobal.getVariableValue("correctMisplacedViaPointsDistance", 40.f);
 
     // process tags not used in the profile (to have them in the data-tab)
-    processUnusedTags = 0.f != expctxGlobal.getVariableValue("processUnusedTags", 0.f);
+    processUnusedTags = 0.f != expressionContextGlobal.getVariableValue("processUnusedTags", 0.f);
 
-    forceSecondaryData = 0.f != expctxGlobal.getVariableValue("forceSecondaryData", 0.f);
-    pass1coefficient = expctxGlobal.getVariableValue("pass1coefficient", 1.5f);
-    pass2coefficient = expctxGlobal.getVariableValue("pass2coefficient", 0.f);
-    elevationpenaltybuffer = (int) (expctxGlobal.getVariableValue("elevationpenaltybuffer", 5.f) * 1000000);
-    elevationmaxbuffer = (int) (expctxGlobal.getVariableValue("elevationmaxbuffer", 10.f) * 1000000);
-    elevationbufferreduce = (int) (expctxGlobal.getVariableValue("elevationbufferreduce", 0.f) * 10000);
+    forceSecondaryData = 0.f != expressionContextGlobal.getVariableValue("forceSecondaryData", 0.f);
+    pass1coefficient = expressionContextGlobal.getVariableValue("pass1coefficient", 1.5f);
+    pass2coefficient = expressionContextGlobal.getVariableValue("pass2coefficient", 0.f);
+    elevationpenaltybuffer = (int) (expressionContextGlobal.getVariableValue("elevationpenaltybuffer", 5.f) * 1000000);
+    elevationmaxbuffer = (int) (expressionContextGlobal.getVariableValue("elevationmaxbuffer", 10.f) * 1000000);
+    elevationbufferreduce = (int) (expressionContextGlobal.getVariableValue("elevationbufferreduce", 0.f) * 10000);
 
-    cost1speed = expctxGlobal.getVariableValue("cost1speed", 22.f);
-    additionalcostfactor = expctxGlobal.getVariableValue("additionalcostfactor", 1.5f);
-    changetime = expctxGlobal.getVariableValue("changetime", 180.f);
-    buffertime = expctxGlobal.getVariableValue("buffertime", 120.f);
-    waittimeadjustment = expctxGlobal.getVariableValue("waittimeadjustment", 0.9f);
-    inittimeadjustment = expctxGlobal.getVariableValue("inittimeadjustment", 0.2f);
-    starttimeoffset = expctxGlobal.getVariableValue("starttimeoffset", 0.f);
-    transitonly = expctxGlobal.getVariableValue("transitonly", 0.f) != 0.f;
+    cost1speed = expressionContextGlobal.getVariableValue("cost1speed", 22.f);
+    additionalcostfactor = expressionContextGlobal.getVariableValue("additionalcostfactor", 1.5f);
+    changetime = expressionContextGlobal.getVariableValue("changetime", 180.f);
+    buffertime = expressionContextGlobal.getVariableValue("buffertime", 120.f);
+    waittimeadjustment = expressionContextGlobal.getVariableValue("waittimeadjustment", 0.9f);
+    inittimeadjustment = expressionContextGlobal.getVariableValue("inittimeadjustment", 0.2f);
+    starttimeoffset = expressionContextGlobal.getVariableValue("starttimeoffset", 0.f);
+    transitonly = expressionContextGlobal.getVariableValue("transitonly", 0.f) != 0.f;
 
-    farTrafficWeight = expctxGlobal.getVariableValue("farTrafficWeight", 2.f);
-    nearTrafficWeight = expctxGlobal.getVariableValue("nearTrafficWeight", 2.f);
-    farTrafficDecayLength = expctxGlobal.getVariableValue("farTrafficDecayLength", 30000.f);
-    nearTrafficDecayLength = expctxGlobal.getVariableValue("nearTrafficDecayLength", 3000.f);
-    trafficDirectionFactor = expctxGlobal.getVariableValue("trafficDirectionFactor", 0.9f);
-    trafficSourceExponent = expctxGlobal.getVariableValue("trafficSourceExponent", -0.7f);
-    trafficSourceMinDist = expctxGlobal.getVariableValue("trafficSourceMinDist", 3000.f);
+    farTrafficWeight = expressionContextGlobal.getVariableValue("farTrafficWeight", 2.f);
+    nearTrafficWeight = expressionContextGlobal.getVariableValue("nearTrafficWeight", 2.f);
+    farTrafficDecayLength = expressionContextGlobal.getVariableValue("farTrafficDecayLength", 30000.f);
+    nearTrafficDecayLength = expressionContextGlobal.getVariableValue("nearTrafficDecayLength", 3000.f);
+    trafficDirectionFactor = expressionContextGlobal.getVariableValue("trafficDirectionFactor", 0.9f);
+    trafficSourceExponent = expressionContextGlobal.getVariableValue("trafficSourceExponent", -0.7f);
+    trafficSourceMinDist = expressionContextGlobal.getVariableValue("trafficSourceMinDist", 3000.f);
 
-    showspeed = 0.f != expctxGlobal.getVariableValue("showspeed", 0.f);
-    showSpeedProfile = 0.f != expctxGlobal.getVariableValue("showSpeedProfile", 0.f);
-    inverseRouting = 0.f != expctxGlobal.getVariableValue("inverseRouting", 0.f);
-    showTime = 0.f != expctxGlobal.getVariableValue("showtime", 0.f);
+    showspeed = 0.f != expressionContextGlobal.getVariableValue("showspeed", 0.f);
+    showSpeedProfile = 0.f != expressionContextGlobal.getVariableValue("showSpeedProfile", 0.f);
+    inverseRouting = 0.f != expressionContextGlobal.getVariableValue("inverseRouting", 0.f);
+    showTime = 0.f != expressionContextGlobal.getVariableValue("showtime", 0.f);
 
-    int tiMode = (int) expctxGlobal.getVariableValue("turnInstructionMode", 0.f);
+    int tiMode = (int) expressionContextGlobal.getVariableValue("turnInstructionMode", 0.f);
     if (tiMode != 1) // automatic selection from coordinate source
     {
       turnInstructionMode = tiMode;
     }
-    turnInstructionCatchingRange = expctxGlobal.getVariableValue("turnInstructionCatchingRange", 40.f);
-    turnInstructionRoundabouts = expctxGlobal.getVariableValue("turnInstructionRoundabouts", 1.f) != 0.f;
+    turnInstructionCatchingRange = expressionContextGlobal.getVariableValue("turnInstructionCatchingRange", 40.f);
+    turnInstructionRoundabouts = expressionContextGlobal.getVariableValue("turnInstructionRoundabouts", 1.f) != 0.f;
 
     // Speed computation model (for bikes)
     // Total mass (biker + bike + luggages or hiker), in kg
-    totalMass = expctxGlobal.getVariableValue("totalMass", 90.f);
+    totalMass = expressionContextGlobal.getVariableValue("totalMass", 90.f);
     // Max speed (before braking), in km/h in profile and m/s in code
     if (footMode) {
-      maxSpeed = expctxGlobal.getVariableValue("maxSpeed", 6.f) / 3.6;
+      maxSpeed = expressionContextGlobal.getVariableValue("maxSpeed", 6.f) / 3.6;
     } else {
-      maxSpeed = expctxGlobal.getVariableValue("maxSpeed", 45.f) / 3.6;
+      maxSpeed = expressionContextGlobal.getVariableValue("maxSpeed", 45.f) / 3.6;
     }
     // Equivalent surface for wind, S * C_x, F = -1/2 * S * C_x * v^2 = - S_C_x * v^2
-    S_C_x = expctxGlobal.getVariableValue("S_C_x", 0.5f * 0.45f);
+    S_C_x = expressionContextGlobal.getVariableValue("S_C_x", 0.5f * 0.45f);
     // Default resistance of the road, F = - m * g * C_r (for good quality road)
-    defaultC_r = expctxGlobal.getVariableValue("C_r", 0.01f);
+    defaultC_r = expressionContextGlobal.getVariableValue("C_r", 0.01f);
     // Constant power of the biker (in W)
-    bikerPower = expctxGlobal.getVariableValue("bikerPower", 100.f);
+    bikerPower = expressionContextGlobal.getVariableValue("bikerPower", 100.f);
   }
 
   public List<OsmNodeNamed> poipoints;
@@ -265,49 +265,49 @@ public final class RoutingContext {
     noGoPoints = nogos.isEmpty() ? null : nogos;
   }
 
-  public void checkMatchedWaypointAgainstNogos(List<MatchedWaypoint> matchedWaypoints) {
+  public void checkMatchedWaypointAgainstNoGos(List<MatchedWaypoint> matchedWaypoints) {
     if (noGoPoints == null) return;
     List<MatchedWaypoint> newMatchedWaypoints = new ArrayList<>();
     int theSize = matchedWaypoints.size();
     int removed = 0;
-    MatchedWaypoint prevMwp = null;
-    boolean prevMwpIsInside = false;
+    MatchedWaypoint previousMatchedWaypoint = null;
+    boolean previousMatchedWaypointIsInside = false;
     for (int i = 0; i < theSize; i++) {
-      MatchedWaypoint mwp = matchedWaypoints.get(i);
-      boolean isInsideNogo = false;
-      OsmNode wp = mwp.crosspoint;
-      for (OsmNodeNamed nogo : noGoPoints) {
-        if (wp.calcDistance(nogo) < nogo.radius
-          && (!(nogo instanceof OsmNogoPolygon)
-          || (((OsmNogoPolygon) nogo).isClosed
-          ? ((OsmNogoPolygon) nogo).isWithin(wp.longitude, wp.latitude)
-          : ((OsmNogoPolygon) nogo).isOnPolyline(wp.longitude, wp.latitude)))) {
-          isInsideNogo = true;
+      MatchedWaypoint matchedWaypoint = matchedWaypoints.get(i);
+      boolean isInsideNoGo = false;
+      OsmNode wp = matchedWaypoint.crosspoint;
+      for (OsmNodeNamed noGoPoint : noGoPoints) {
+        if (wp.calcDistance(noGoPoint) < noGoPoint.radius
+          && (!(noGoPoint instanceof OsmNogoPolygon)
+          || (((OsmNogoPolygon) noGoPoint).isClosed
+          ? ((OsmNogoPolygon) noGoPoint).isWithin(wp.longitude, wp.latitude)
+          : ((OsmNogoPolygon) noGoPoint).isOnPolyline(wp.longitude, wp.latitude)))) {
+          isInsideNoGo = true;
           break;
         }
       }
-      if (isInsideNogo) {
+      if (isInsideNoGo) {
         boolean useAnyway = false;
-        if (prevMwp == null) useAnyway = true;
-        else if (mwp.direct) useAnyway = true;
-        else if (prevMwp.direct) useAnyway = true;
-        else if (prevMwpIsInside) useAnyway = true;
+        if (previousMatchedWaypoint == null) useAnyway = true;
+        else if (matchedWaypoint.direct) useAnyway = true;
+        else if (previousMatchedWaypoint.direct) useAnyway = true;
+        else if (previousMatchedWaypointIsInside) useAnyway = true;
         else if (i == theSize-1) {
           throw new IllegalArgumentException("last wpt in restricted area ");
         }
         if (useAnyway) {
-          prevMwpIsInside = true;
-          newMatchedWaypoints.add(mwp);
+          previousMatchedWaypointIsInside = true;
+          newMatchedWaypoints.add(matchedWaypoint);
         } else {
           removed++;
-          prevMwpIsInside = false;
+          previousMatchedWaypointIsInside = false;
         }
 
       } else {
-        prevMwpIsInside = false;
-        newMatchedWaypoints.add(mwp);
+        previousMatchedWaypointIsInside = false;
+        newMatchedWaypoints.add(matchedWaypoint);
       }
-      prevMwp = mwp;
+      previousMatchedWaypoint = matchedWaypoint;
     }
     if (newMatchedWaypoints.size() < 2) {
       throw new IllegalArgumentException("a wpt in restricted area ");
@@ -316,27 +316,6 @@ public final class RoutingContext {
       matchedWaypoints.clear();
       matchedWaypoints.addAll(newMatchedWaypoints);
     }
-  }
-
-  public boolean allInOneNogo(List<OsmNode> waypoints) {
-    if (noGoPoints == null) return false;
-    boolean allInTotal = false;
-    for (OsmNodeNamed nogo : noGoPoints) {
-      boolean allIn = Double.isNaN(nogo.noGoWeight);
-      for (OsmNode wp : waypoints) {
-        int dist = wp.calcDistance(nogo);
-        if (dist < nogo.radius
-          && (!(nogo instanceof OsmNogoPolygon)
-          || (((OsmNogoPolygon) nogo).isClosed
-          ? ((OsmNogoPolygon) nogo).isWithin(wp.longitude, wp.latitude)
-          : ((OsmNogoPolygon) nogo).isOnPolyline(wp.longitude, wp.latitude)))) {
-          continue;
-        }
-        allIn = false;
-      }
-      allInTotal |= allIn;
-    }
-    return allInTotal;
   }
 
   public long[] getNogoChecksums() {

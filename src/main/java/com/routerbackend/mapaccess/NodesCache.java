@@ -285,27 +285,27 @@ public final class NodesCache {
     return existing;
   }
 
-  public void matchWaypointsToNodes(List<MatchedWaypoint> unmatchedWaypoints, double maxDistance, OsmNodePairSet islandNodePairs) {
-    waypointMatcher = new WaypointMatcherImpl(unmatchedWaypoints, maxDistance, islandNodePairs);
-    for (MatchedWaypoint mwp : unmatchedWaypoints) {
+  public void matchWaypointsToNodes(List<MatchedWaypoint> matchedWaypoints, double maxDistance, OsmNodePairSet islandNodePairs) {
+    waypointMatcher = new WaypointMatcherImpl(matchedWaypoints, maxDistance, islandNodePairs);
+    for (MatchedWaypoint mwp : matchedWaypoints) {
       preloadPosition(mwp.waypoint);
     }
 
     if (first_file_access_failed) {
       throw new IllegalArgumentException("datafile " + first_file_access_name + " not found");
     }
-    int len = unmatchedWaypoints.size();
+    int len = matchedWaypoints.size();
     for (int i = 0; i < len; i++) {
-      MatchedWaypoint mwp = unmatchedWaypoints.get(i);
+      MatchedWaypoint mwp = matchedWaypoints.get(i);
       if (mwp.crosspoint == null) {
-        if (unmatchedWaypoints.size() > 1 && i == unmatchedWaypoints.size() - 1 && unmatchedWaypoints.get(i - 1).direct) {
+        if (matchedWaypoints.size() > 1 && i == matchedWaypoints.size() - 1 && matchedWaypoints.get(i - 1).direct) {
           mwp.crosspoint = new OsmNode(mwp.waypoint.longitude, mwp.waypoint.latitude);
           mwp.direct = true;
         } else {
           throw new IllegalArgumentException(mwp.name + "-position not mapped in existing datafile");
         }
       }
-      if (unmatchedWaypoints.size() > 1 && i == unmatchedWaypoints.size() - 1 && unmatchedWaypoints.get(i - 1).direct) {
+      if (matchedWaypoints.size() > 1 && i == matchedWaypoints.size() - 1 && matchedWaypoints.get(i - 1).direct) {
         mwp.crosspoint = new OsmNode(mwp.waypoint.longitude, mwp.waypoint.latitude);
         mwp.direct = true;
       }
