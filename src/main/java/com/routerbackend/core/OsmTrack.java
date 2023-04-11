@@ -10,10 +10,8 @@ import com.routerbackend.utils.CompactLongMap;
 import com.routerbackend.utils.FrozenLongMap;
 import com.routerbackend.utils.StringUtils;
 
-import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public final class OsmTrack {
@@ -64,7 +62,7 @@ public final class OsmTrack {
 
   public void registerDetourForId(long id, OsmPathElement detour) {
     if (detourMap == null) {
-      detourMap = new CompactLongMap<OsmPathElementHolder>();
+      detourMap = new CompactLongMap<>();
     }
     OsmPathElementHolder nh = new OsmPathElementHolder();
     nh.node = detour;
@@ -106,43 +104,12 @@ public final class OsmTrack {
           }
         }
       }
-      detourMap = new FrozenLongMap<OsmPathElementHolder>(tmpDetourMap);
-    }
-  }
-
-  OsmPathElement lastorigin = null;
-
-  public void appendDetours(OsmTrack source) {
-    if (detourMap == null) {
-      detourMap = source.detourMap == null ? null : new CompactLongMap<OsmPathElementHolder>();
-    }
-    if (source.detourMap != null) {
-      int pos = nodes.size() - source.nodes.size() + 1;
-      OsmPathElement origin = null;
-      if (pos > 0)
-        origin = nodes.get(pos);
-      for (OsmPathElement node : source.nodes) {
-        long id = node.getIdFromPos();
-        OsmPathElementHolder nh = new OsmPathElementHolder();
-        if (node.origin == null && lastorigin != null)
-          node.origin = lastorigin;
-        nh.node = node;
-        lastorigin = node;
-        OsmPathElementHolder h = detourMap.get(id);
-        if (h != null) {
-          while (h.nextHolder != null) {
-            h = h.nextHolder;
-          }
-          h.nextHolder = nh;
-        } else {
-          detourMap.fastPut(id, nh);
-        }
-      }
+      detourMap = new FrozenLongMap<>(tmpDetourMap);
     }
   }
 
   public void buildMap() {
-    nodesMap = new CompactLongMap<OsmPathElementHolder>();
+    nodesMap = new CompactLongMap<>();
     for (OsmPathElement node : nodes) {
       long id = node.getIdFromPos();
       OsmPathElementHolder nh = new OsmPathElementHolder();
@@ -157,7 +124,7 @@ public final class OsmTrack {
         nodesMap.fastPut(id, nh);
       }
     }
-    nodesMap = new FrozenLongMap<OsmPathElementHolder>(nodesMap);
+    nodesMap = new FrozenLongMap<>(nodesMap);
   }
 
   private List<String> aggregateMessages() {
@@ -183,7 +150,7 @@ public final class OsmTrack {
   }
 
   private List<String> aggregateSpeedProfile() {
-    ArrayList<String> res = new ArrayList<String>();
+    ArrayList<String> res = new ArrayList<>();
     int vmax = -1;
     int vmaxe = -1;
     int vmin = -1;
@@ -202,18 +169,6 @@ public final class OsmTrack {
     }
     return res;
   }
-
-  private static String formatLongs(long[] al) {
-    StringBuilder sb = new StringBuilder();
-    sb.append('{');
-    for (long l : al) {
-      sb.append(l);
-      sb.append(' ');
-    }
-    sb.append('}');
-    return sb.toString();
-  }
-
 
   public void addNodes(OsmTrack t) {
     for (OsmPathElement n : t.nodes)
@@ -478,21 +433,6 @@ public final class OsmTrack {
     return (int) (s + 0.5);
   }
 
-  public String getFormattedTime2() {
-    int seconds = (int) (getTotalSeconds() + 0.5);
-    int hours = seconds / 3600;
-    int minutes = (seconds - hours * 3600) / 60;
-    seconds = seconds - hours * 3600 - minutes * 60;
-    String time = "";
-    if (hours != 0)
-      time = "" + hours + "h ";
-    if (minutes != 0)
-      time = time + minutes + "m ";
-    if (seconds != 0)
-      time = time + seconds + "s";
-    return time;
-  }
-
   private static String formatILon(int ilon) {
     return formatPos(ilon - 180000000);
   }
@@ -516,12 +456,6 @@ public final class OsmTrack {
     if (negative)
       ac[i--] = '-';
     return new String(ac, i + 1, 11 - i);
-  }
-
-  private String format1(double n) {
-    String s = "" + (long) (n * 10 + 0.5);
-    int len = s.length();
-    return s.substring(0, len - 1) + "." + s.charAt(len - 1);
   }
 
   public OsmPathElementHolder getFromDetourMap(long id) {

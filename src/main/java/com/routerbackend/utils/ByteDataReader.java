@@ -54,11 +54,6 @@ public class ByteDataReader {
     return i0 != 0;
   }
 
-  public final byte readByte() {
-    int i0 = ab[aboffset++] & 0xff;
-    return (byte) (i0);
-  }
-
   public final short readShort() {
     int i1 = ab[aboffset++] & 0xff;
     int i0 = ab[aboffset++] & 0xff;
@@ -83,16 +78,6 @@ public class ByteDataReader {
     byte[] data = new byte[size];
     readFully(data);
     return data;
-  }
-
-  public final byte[] readVarBytes() {
-    int len = readVarLengthUnsigned();
-    if (len == 0) {
-      return null;
-    }
-    byte[] bytes = new byte[len];
-    readFully(bytes);
-    return bytes;
   }
 
   public final int readVarLengthSigned() {

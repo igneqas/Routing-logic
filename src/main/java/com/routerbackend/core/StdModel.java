@@ -5,7 +5,6 @@
  */
 package com.routerbackend.core;
 
-import com.routerbackend.expressions.BExpressionContext;
 import com.routerbackend.expressions.BExpressionContextNode;
 import com.routerbackend.expressions.BExpressionContextWay;
 
@@ -29,8 +28,5 @@ final class StdModel extends OsmPathModel {
   public void init(BExpressionContextWay expctxWay, BExpressionContextNode expctxNode, Map<String, String> keyValues) {
     ctxWay = expctxWay;
     ctxNode = expctxNode;
-
-    BExpressionContext expctxGlobal = expctxWay; // just one of them...
-
   }
 }

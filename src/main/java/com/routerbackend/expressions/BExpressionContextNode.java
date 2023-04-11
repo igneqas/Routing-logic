@@ -19,11 +19,6 @@ public final class BExpressionContextNode extends BExpressionContext {
     return getBuildInVariable(0);
   }
 
-
-  public BExpressionContextNode(BExpressionMetaData meta) {
-    super("node", meta);
-  }
-
   /**
    * Create an Expression-Context for way context
    *

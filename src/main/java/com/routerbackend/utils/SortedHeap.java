@@ -82,21 +82,6 @@ public final class SortedHeap<V> {
       }
     }
 
-    void add(int key, Object value) {
-      int p = lp;
-      for (; ; ) {
-        if (p == binsize || key < al[p]) {
-          al[p - 1] = key;
-          vla[p - 1] = value;
-          lv = al[--lp];
-          return;
-        }
-        al[p - 1] = al[p];
-        vla[p - 1] = vla[p];
-        p++;
-      }
-    }
-
     // unrolled version of above for binsize = 4
     void add4(int key, Object value) {
       int p = lp--;
@@ -281,30 +266,5 @@ public final class SortedHeap<V> {
 
   public int getSize() {
     return size;
-  }
-
-  public int getPeakSize() {
-    return peaksize;
-  }
-
-  public int getExtract(Object[] targetArray) {
-    int tsize = targetArray.length;
-    int div = size / tsize + 1;
-    int tp = 0;
-
-    int lpi = 0;
-    SortedBin bin = firstNonEmpty;
-    while (bin != null) {
-      lpi += bin.lp;
-      Object[] vlai = bin.vla;
-      int n = bin.binsize;
-      while (lpi < n) {
-        targetArray[tp++] = vlai[lpi];
-        lpi += div;
-      }
-      lpi -= n;
-      bin = bin.nextNonEmpty;
-    }
-    return tp;
   }
 }

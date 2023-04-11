@@ -18,33 +18,13 @@ public class ByteDataWriter extends ByteDataReader {
     ab[aboffset++] = (byte) ((v) & 0xff);
   }
 
-  public final void writeLong(long v) {
-    ab[aboffset++] = (byte) ((v >> 56) & 0xff);
-    ab[aboffset++] = (byte) ((v >> 48) & 0xff);
-    ab[aboffset++] = (byte) ((v >> 40) & 0xff);
-    ab[aboffset++] = (byte) ((v >> 32) & 0xff);
-    ab[aboffset++] = (byte) ((v >> 24) & 0xff);
-    ab[aboffset++] = (byte) ((v >> 16) & 0xff);
-    ab[aboffset++] = (byte) ((v >> 8) & 0xff);
-    ab[aboffset++] = (byte) ((v) & 0xff);
-  }
-
   public final void writeBoolean(boolean v) {
     ab[aboffset++] = (byte) (v ? 1 : 0);
-  }
-
-  public final void writeByte(int v) {
-    ab[aboffset++] = (byte) ((v) & 0xff);
   }
 
   public final void writeShort(int v) {
     ab[aboffset++] = (byte) ((v >> 8) & 0xff);
     ab[aboffset++] = (byte) ((v) & 0xff);
-  }
-
-  public final void write(byte[] sa) {
-    System.arraycopy(sa, 0, ab, aboffset, sa.length);
-    aboffset += sa.length;
   }
 
   public final void write(byte[] sa, int offset, int len) {
@@ -70,14 +50,6 @@ public class ByteDataWriter extends ByteDataReader {
       write(sa, 0, len);
     }
   }
-
-
-  public final byte[] toByteArray() {
-    byte[] c = new byte[aboffset];
-    System.arraycopy(ab, 0, c, 0, aboffset);
-    return c;
-  }
-
 
   /**
    * Just reserves a single byte and return it' offset.

@@ -13,7 +13,7 @@ import java.util.List;
 public class FrozenLongMap<V> extends CompactLongMap<V> {
   private long[] faid;
   private List<V> flv;
-  private int size = 0;
+  private int size;
   private int p2size; // next power of 2 of size
 
   public FrozenLongMap(CompactLongMap<V> map) {

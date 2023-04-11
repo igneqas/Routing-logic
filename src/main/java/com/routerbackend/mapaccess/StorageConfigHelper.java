@@ -14,10 +14,6 @@ public class StorageConfigHelper {
     return getStorageLocation(segmentDir, "secondary_segment_dir=");
   }
 
-  public static File getAdditionalMaptoolDir(File segmentDir) {
-    return getStorageLocation(segmentDir, "additional_maptool_dir=");
-  }
-
   private static File getStorageLocation(File segmentDir, String tag) {
     File res = null;
     BufferedReader br = null;

@@ -287,13 +287,6 @@ public class BitCoderContext {
     return (idx << 3) + 8 - bits;
   }
 
-  public final void setReadingBitPosition(int pos) {
-    idx = pos >>> 3;
-    bits = (idx << 3) + 8 - pos;
-    b = ab[idx] & 0xff;
-    b >>>= (8 - bits);
-  }
-
   public static void main(String[] args) {
     byte[] ab = new byte[581969];
     BitCoderContext ctx = new BitCoderContext(ab);

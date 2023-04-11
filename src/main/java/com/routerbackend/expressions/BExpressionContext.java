@@ -163,16 +163,6 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
     return ab;
   }
 
-
-  /**
-   * decode byte array to internal lookup data
-   */
-  public void decode(byte[] ab) {
-    decode(lookupData, false, ab);
-    lookupDataValid = true;
-  }
-
-
   /**
    * decode a byte-array into a lookup data array
    */
@@ -217,43 +207,8 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
     return sb.toString();
   }
 
-  public List<String> getKeyValueList(boolean inverseDirection, byte[] ab) {
-    ArrayList<String> res = new ArrayList<String>();
-    decode(lookupData, inverseDirection, ab);
-    for (int inum = 0; inum < lookupValues.size(); inum++) // loop over lookup names
-    {
-      BExpressionLookupValue[] va = lookupValues.get(inum);
-      int val = lookupData[inum];
-      // no negative values
-      String value = (val >= 1000) ? Float.toString((val - 1000) / 100f) : va[val].toString();
-      if (value != null && value.length() > 0) {
-        res.add(lookupNames.get(inum));
-        res.add(value);
-      }
-    }
-    return res;
-  }
-
-  public int getLookupKey(String name) {
-    int res = -1;
-    try {
-      res = lookupNumbers.get(name).intValue();
-    } catch (Exception e) {
-    }
-    return res;
-  }
-
   public float getLookupValue(int key) {
     float res = 0f;
-    int val = lookupData[key];
-    if (val == 0) return Float.NaN;
-    res = (val - 1000) / 100f;
-    return res;
-  }
-
-  public float getLookupValue(boolean inverseDirection, byte[] ab, int key) {
-    float res = 0f;
-    decode(lookupData, inverseDirection, ab);
     int val = lookupData[key];
     if (val == 0) return Float.NaN;
     res = (val - 1000) / 100f;
@@ -307,14 +262,6 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
     }
   }
 
-  private long requests;
-  private long requests2;
-  private long cachemisses;
-
-  public String cacheStats() {
-    return "requests=" + requests + " requests2=" + requests2 + " cachemisses=" + cachemisses;
-  }
-
   private CacheNode lastCacheNode = new CacheNode();
 
    @Override
@@ -345,7 +292,6 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
 
 
   public final void evaluate(boolean inverseDirection, byte[] ab) {
-    requests++;
     lookupDataValid = false; // this is an assertion for a nasty pifall
 
     if (cache == null) {
@@ -368,8 +314,6 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
     }
 
     if (cn == null) {
-      cachemisses++;
-
       cn = (CacheNode) cache.removeLru();
       if (cn == null) {
         cn = new CacheNode();
@@ -406,8 +350,6 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
       }
       cn.vars = vw.vars;
     } else {
-      if (ab == cn.ab) requests2++;
-
       cache.touch(cn);
     }
 
@@ -423,42 +365,6 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
     }
   }
 
-
-  public void dumpStatistics() {
-    TreeMap<String, String> counts = new TreeMap<String, String>();
-    // first count
-    for (String name : lookupNumbers.keySet()) {
-      int cnt = 0;
-      int inum = lookupNumbers.get(name).intValue();
-      int[] histo = lookupHistograms.get(inum);
-//    if ( histo.length == 500 ) continue;
-      for (int i = 2; i < histo.length; i++) {
-        cnt += histo[i];
-      }
-      counts.put("" + (1000000000 + cnt) + "_" + name, name);
-    }
-
-    while (counts.size() > 0) {
-      String key = counts.lastEntry().getKey();
-      String name = counts.get(key);
-      counts.remove(key);
-      int inum = lookupNumbers.get(name).intValue();
-      BExpressionLookupValue[] values = lookupValues.get(inum);
-      int[] histo = lookupHistograms.get(inum);
-      if (values.length == 1000) continue;
-      String[] svalues = new String[values.length];
-      for (int i = 0; i < values.length; i++) {
-        String scnt = "0000000000" + histo[i];
-        scnt = scnt.substring(scnt.length() - 10);
-        svalues[i] = scnt + " " + values[i].toString();
-      }
-      Arrays.sort(svalues);
-      for (int i = svalues.length - 1; i >= 0; i--) {
-        System.out.println(name + ";" + svalues[i]);
-      }
-    }
-  }
-
   /**
    * @return a new lookupData array, or null if no metadata defined
    */
@@ -467,43 +373,6 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
       return new int[lookupValues.size()];
     }
     return null;
-  }
-
-  /**
-   * generate random values for regression testing
-   */
-  public int[] generateRandomValues(Random rnd) {
-    int[] data = createNewLookupData();
-    data[0] = 2 * rnd.nextInt(2); // reverse-direction = 0 or 2
-    for (int inum = 1; inum < data.length; inum++) {
-      int nvalues = lookupValues.get(inum).length;
-      data[inum] = 0;
-      if (inum > 1 && rnd.nextInt(10) > 0) continue; // tags other than highway only 10%
-      data[inum] = rnd.nextInt(nvalues);
-    }
-    lookupDataValid = true;
-    return data;
-  }
-
-  public void assertAllVariablesEqual(BExpressionContext other) {
-    int nv = variableData.length;
-    int nv2 = other.variableData.length;
-    if (nv != nv2) throw new RuntimeException("mismatch in variable-count: " + nv + "<->" + nv2);
-    for (int i = 0; i < nv; i++) {
-      if (variableData[i] != other.variableData[i]) {
-        throw new RuntimeException("mismatch in variable " + variableName(i) + " " + variableData[i] + "<->" + other.variableData[i]
-          + "\ntags = " + getKeyValueDescription(false, encode()));
-      }
-    }
-  }
-
-  public String variableName(int idx) {
-    for (Map.Entry<String, Integer> e : variableNumbers.entrySet()) {
-      if (e.getValue().intValue() == idx) {
-        return e.getKey();
-      }
-    }
-    throw new RuntimeException("no variable for index" + idx);
   }
 
   /**
@@ -676,57 +545,6 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
     if (lookupData2 != null) lookupData2[inum] = i;
     else lookupData[inum] = i;
     return newValue;
-  }
-
-  /**
-   * add a value-index to to internal array
-   * value-index means 0=unknown, 1=other, 2=value-x, ...
-   */
-  public void addLookupValue(String name, int valueIndex) {
-    Integer num = lookupNumbers.get(name);
-    if (num == null) {
-      return;
-    }
-
-    // look for that value
-    int inum = num.intValue();
-    int nvalues = lookupValues.get(inum).length;
-    if (valueIndex < 0 || valueIndex >= nvalues)
-      throw new IllegalArgumentException("value index out of range for name " + name + ": " + valueIndex);
-    lookupData[inum] = valueIndex;
-  }
-
-
-  /**
-   * special hack for yes/proposed relations:
-   * add a lookup value if not yet a smaller, &gt; 1 value was added
-   * add a 2=yes if the provided value is out of range
-   * value-index means here 0=unknown, 1=other, 2=yes, 3=proposed
-   */
-  public void addSmallestLookupValue(String name, int valueIndex) {
-    Integer num = lookupNumbers.get(name);
-    if (num == null) {
-      return;
-    }
-
-    // look for that value
-    int inum = num.intValue();
-    int nvalues = lookupValues.get(inum).length;
-    int oldValueIndex = lookupData[inum];
-    if (oldValueIndex > 1 && oldValueIndex < valueIndex) {
-      return;
-    }
-    if (valueIndex >= nvalues) {
-      valueIndex = nvalues - 1;
-    }
-    if (valueIndex < 0)
-      throw new IllegalArgumentException("value index out of range for name " + name + ": " + valueIndex);
-    lookupData[inum] = valueIndex;
-  }
-
-  public boolean getBooleanLookupValue(String name) {
-    Integer num = lookupNumbers.get(name);
-    return num != null && lookupData[num.intValue()] == 2;
   }
 
   public int getOutputVariableIndex(String name, boolean mustExist) {

@@ -44,18 +44,6 @@ public final class SearchBoundary {
     maxlat = lat + 6000000;
   }
 
-  public static String getFileName(OsmNode n) {
-    int lon = (n.longitude / 5000000) * 5000000;
-    int lat = (n.latitude / 5000000) * 5000000;
-
-    int dlon = lon / 1000000 - 180;
-    int dlat = lat / 1000000 - 90;
-
-    String slon = dlon < 0 ? "W" + (-dlon) : "E" + dlon;
-    String slat = dlat < 0 ? "S" + (-dlat) : "N" + dlat;
-    return slon + "_" + slat + ".trf";
-  }
-
   public boolean isInBoundary(OsmNode n, int cost) {
     if (radius > 0) {
       return n.calcDistance(p) < radius;

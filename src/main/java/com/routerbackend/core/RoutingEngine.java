@@ -25,11 +25,8 @@ public class RoutingEngine extends Thread {
 
   protected OsmTrack foundTrack = new OsmTrack();
   private OsmTrack foundRawTrack = null;
-  private int alternativeIndex = 0;
 
   protected String errorMessage = null;
-
-  private volatile boolean terminated;
 
   protected File segmentDir = new File("src/main/java/com/data/segments");
   protected RoutingContext routingContext;
@@ -63,10 +60,8 @@ public class RoutingEngine extends Thread {
         track.name = "brouter_" + routingContext.getProfileName() + "_" + i;
           if (i == routingContext.getAlternativeIdx(0, 3)) {
             foundTrack = track;
-          } else {
-            continue;
+            break;
           }
-        break;
       }
     } catch (IllegalArgumentException e) {
 //      logException(e);
@@ -306,7 +301,6 @@ public class RoutingEngine extends Thread {
 
     int ourSize = tt.nodes.size();
     if (ourSize > 0) {
-      OsmPathElement testPoint = tt.nodes.get(ourSize - 1);
       if (routingContext.poipoints != null) {
         for (OsmNodeNamed node : routingContext.poipoints) {
 
@@ -325,24 +319,17 @@ public class RoutingEngine extends Thread {
       ArrayList<OsmPathElement> removeBackList = new ArrayList<>();
       ArrayList<OsmPathElement> removeForeList = new ArrayList<>();
       ArrayList<Integer> removeVoiceHintList = new ArrayList<>();
-      int lon0,
-        lat0,
-        lon1,
-        lat1,
-        lon2,
-        lat2;
-      OsmPathElement last = null;
-      OsmPathElement lastJunction = null;
+      OsmPathElement last;
       CompactLongMap<OsmTrack.OsmPathElementHolder> lastJunctions = new CompactLongMap<>();
-      OsmPathElement newJunction = null;
-      OsmPathElement newTarget = null;
-      OsmPathElement tmpback = null;
-      OsmPathElement tmpfore = null;
+      OsmPathElement newJunction;
+      OsmPathElement newTarget;
+      OsmPathElement tmpback;
+      OsmPathElement tmpfore;
       int indexback = ourSize - 1;
       int indexfore = 0;
       int stop = (indexback - MAX_STEPS_CHECK > 1 ? indexback - MAX_STEPS_CHECK : 1);
       double wayDistance = 0;
-      double nextDist = 0;
+      double nextDist;
       while (indexback >= 1 && indexback >= stop && indexfore < t.nodes.size()) {
         int junctions = 0;
         tmpback = tt.nodes.get(indexback);
@@ -467,7 +454,7 @@ public class RoutingEngine extends Thread {
 
   private void recalcTrack(OsmTrack t) {
 
-    int i = 0;
+    int i;
 
     int lon0,
       lat0,
@@ -608,7 +595,7 @@ public class RoutingEngine extends Thread {
       // we want a beeline-segment
       OsmPath path = routingContext.createPath(new OsmLink(null, startWp.crosspoint));
       path = routingContext.createPath(path, new OsmLink(startWp.crosspoint, endWp.crosspoint), null, false);
-      return compileTrack(path, false);
+      return compileTrack(path);
     } finally {
       routingContext.restoreNogoList();
     }
@@ -628,8 +615,6 @@ public class RoutingEngine extends Thread {
       try {
         track = findTrack("re-routing", startWp, endWp, nearbyTrack, refTrack, true);
       } catch (IllegalArgumentException iae) {
-        if (terminated) throw iae;
-
         // fast partial recalcs: if that timed out, but we had a match,
         // build the concatenation from the partial and the nearby track
         if (matchPath != null) {
@@ -656,9 +641,8 @@ public class RoutingEngine extends Thread {
         try {
           t = findTrack(cfi == 0 ? "pass0" : "pass1", startWp, endWp, track, refTrack, false);
         } catch (IllegalArgumentException iae) {
-          if (!terminated && matchPath != null) // timeout, but eventually prepare a dirty ref track
+          if (matchPath != null) // timeout, but eventually prepare a dirty ref track
           {
-//            logInfo("supplying dirty reference track after timeout");
             foundRawTrack = mergeTrack(matchPath, track);
             foundRawTrack.endPoint = endWp;
             foundRawTrack.nogoChecksums = routingContext.getNogoChecksums();
@@ -671,7 +655,6 @@ public class RoutingEngine extends Thread {
         if (t == null && track != null && matchPath != null) {
           // ups, didn't find it, use a merge
           t = mergeTrack(matchPath, track);
-//          logInfo("using sloppy merge cause pass1 didn't reach destination");
         }
         if (t != null) {
           track = t;
@@ -682,12 +665,9 @@ public class RoutingEngine extends Thread {
     }
     if (track == null) throw new IllegalArgumentException("no track found");
 
-    OsmPathElement lastElement = null;
-
     boolean wasClean = nearbyTrack != null && !nearbyTrack.isDirty;
     if (refTrack == null && !(wasClean && isDirty)) // do not overwrite a clean with a dirty track
     {
-//      logInfo("supplying new reference track, dirty=" + isDirty);
       track.endPoint = endWp;
       track.nogoChecksums = routingContext.getNogoChecksums();
       track.profileTimestamp = routingContext.profileTimestamp;
@@ -798,9 +778,6 @@ public class RoutingEngine extends Thread {
     int maxTotalCost = guideTrack != null ? guideTrack.cost + 5000 : 1000000000;
     int firstMatchCost = 1000000000;
 
-//    logInfo("findtrack with airDistanceCostFactor=" + airDistanceCostFactor);
-//    if (costCuttingTrack != null) logInfo("costCuttingTrack.cost=" + costCuttingTrack.cost);
-
     matchPath = null;
     int nodesVisited = 0;
 
@@ -808,8 +785,8 @@ public class RoutingEngine extends Thread {
     long startNodeId2 = startWp.node2.getIdFromPos();
     long endNodeId1 = endWp == null ? -1L : endWp.node1.getIdFromPos();
     long endNodeId2 = endWp == null ? -1L : endWp.node2.getIdFromPos();
-    OsmNode end1 = null;
-    OsmNode end2 = null;
+    OsmNode end1;
+    OsmNode end2;
     OsmNodeNamed endPos = null;
 
     boolean sameSegmentSearch = false;
@@ -835,9 +812,6 @@ public class RoutingEngine extends Thread {
 
     routingContext.startDirectionValid = routingContext.forceUseStartDirection || fastPartialRecalc;
     routingContext.startDirectionValid &= routingContext.startDirection != null && !routingContext.inverseDirection;
-//    if (routingContext.startDirectionValid) {
-//      logInfo("using start direction " + routingContext.startDirection);
-//    }
 
     OsmPath startPath1 = getStartPath(start1, start2, startWp, endPos, sameSegmentSearch);
     OsmPath startPath2 = getStartPath(start2, start1, startWp, endPos, sameSegmentSearch);
@@ -846,7 +820,6 @@ public class RoutingEngine extends Thread {
     if (costCuttingTrack != null) {
       OsmPathElement pe1 = costCuttingTrack.getLink(startNodeId1, startNodeId2);
       if (pe1 != null) {
-//        logInfo("initialMatch pe1.cost=" + pe1.cost);
         int c = startPath1.cost - pe1.cost;
         if (c < 0) c = 0;
         if (c < firstMatchCost) firstMatchCost = c;
@@ -854,14 +827,10 @@ public class RoutingEngine extends Thread {
 
       OsmPathElement pe2 = costCuttingTrack.getLink(startNodeId2, startNodeId1);
       if (pe2 != null) {
-//        logInfo("initialMatch pe2.cost=" + pe2.cost);
         int c = startPath2.cost - pe2.cost;
         if (c < 0) c = 0;
         if (c < firstMatchCost) firstMatchCost = c;
       }
-
-//      if (firstMatchCost < 1000000000)
-//        logInfo("firstMatchCost from initial match=" + firstMatchCost);
     }
 
     synchronized (openSet) {
@@ -869,15 +838,11 @@ public class RoutingEngine extends Thread {
       addToOpenset(startPath1);
       addToOpenset(startPath2);
     }
-    ArrayList<OsmPath> openBorderList = new ArrayList<OsmPath>(4096);
+    ArrayList<OsmPath> openBorderList = new ArrayList<>(4096);
     boolean memoryPanicMode = false;
     boolean needNonPanicProcessing = false;
 
     for (; ; ) {
-      if (terminated) {
-        throw new IllegalArgumentException("operation killed by thread-priority-watchdog after " + (System.currentTimeMillis() - startTime) / 1000 + " seconds");
-      }
-
       if (maxRunningTime > 0) {
         long timeout = (matchPath == null && fastPartialRecalc) ? maxRunningTime / 3 : maxRunningTime;
         if (System.currentTimeMillis() - startTime > timeout) {
@@ -925,13 +890,11 @@ public class RoutingEngine extends Thread {
                 openSet.add(p.cost + (int) (p.airdistance * airDistanceCostFactor), p);
               }
               openBorderList.clear();
-//              logInfo("collected, nodes/paths before=" + nodesBefore + "/" + pathsBefore + " after=" + nodesCache.nodesMap.nodesCreated + "/" + openSet.getSize() + " maxTotalCost=" + maxTotalCost);
               if (!nodesCache.nodesMap.isInMemoryBounds(openSet.getSize(), true)) {
                 if (maxTotalCost < 1000000000 || needNonPanicProcessing || fastPartialRecalc) {
                   throw new IllegalArgumentException("memory limit reached");
                 }
                 memoryPanicMode = true;
-//                logInfo("************************ memory limit reached, enabled memory panic mode *************************");
               }
             }
           }
@@ -944,11 +907,9 @@ public class RoutingEngine extends Thread {
 
 
         if (fastPartialRecalc && matchPath != null && path.cost > 30L * firstMatchCost && !costCuttingTrack.isDirty) {
-//          logInfo("early exit: firstMatchCost=" + firstMatchCost + " path.cost=" + path.cost);
 
           // use an early exit, unless there's a realistc chance to complete within the timeout
           if (path.cost > maxTotalCost / 2 && System.currentTimeMillis() - startTime < maxRunningTime / 3) {
-//            logInfo("early exit supressed, running for completion, resetting timeout");
             startTime = System.currentTimeMillis();
             fastPartialRecalc = false;
           } else {
@@ -990,8 +951,7 @@ public class RoutingEngine extends Thread {
           if ((sourceNodeId == endNodeId1 && currentNodeId == endNodeId2)
             || (sourceNodeId == endNodeId2 && currentNodeId == endNodeId1)) {
             // track found, compile
-//            logInfo("found track at cost " + path.cost + " nodesVisited = " + nodesVisited);
-            OsmTrack t = compileTrack(path, verbose);
+            OsmTrack t = compileTrack(path);
             t.showspeed = routingContext.showspeed;
             t.showSpeedProfile = routingContext.showSpeedProfile;
             return t;
@@ -1017,7 +977,6 @@ public class RoutingEngine extends Thread {
                 matchPath = OsmPathElement.create(path, routingContext.countTraffic);
               }
               if (costEstimate < maxTotalCost) {
-//                logInfo("maxcost " + maxTotalCost + " -> " + costEstimate);
                 maxTotalCost = costEstimate;
               }
             }
@@ -1180,7 +1139,7 @@ public class RoutingEngine extends Thread {
     }
   }
 
-  private OsmTrack compileTrack(OsmPath path, boolean verbose) {
+  private OsmTrack compileTrack(OsmPath path) {
     OsmPathElement element = OsmPathElement.create(path, false);
 
     // for final track, cut endnode
@@ -1222,7 +1181,6 @@ public class RoutingEngine extends Thread {
       element = nextElement;
     }
     track.distance = distance;
-//    logInfo("track-length = " + track.distance);
     track.buildMap();
 
     // for final track..
@@ -1233,7 +1191,6 @@ public class RoutingEngine extends Thread {
   }
 
   private OsmTrack mergeTrack(OsmPathElement match, OsmTrack oldTrack) {
-//    logInfo("**************** merging match=" + match.cost + " with oldTrack=" + oldTrack.cost);
     OsmPathElement element = match;
     OsmTrack track = new OsmTrack();
     track.cost = oldTrack.cost;

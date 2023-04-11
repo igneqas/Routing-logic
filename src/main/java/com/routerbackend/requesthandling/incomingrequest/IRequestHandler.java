@@ -10,6 +10,4 @@ public interface IRequestHandler {
   RoutingContext readRoutingContext(String profile, String alternativeIdx);
 
   List<OsmNodeNamed> readWaypointList(String lonLats);
-
-  String formatTrack(OsmTrack track);
 }

@@ -43,7 +43,7 @@ public class RequestHandler implements IRequestHandler {
       routingContext.setProfileName("safety");
       String rawNoGoData = PollutionDataHandler.getPollutionData();
       rawNoGoData += TrafficDataHandler.getTrafficData();
-      System.out.println(rawNoGoData);
+//      System.out.println(rawNoGoData);
       routingContext.noGoPoints = readNoGoList(rawNoGoData);
     }
 
@@ -54,13 +54,13 @@ public class RequestHandler implements IRequestHandler {
   public List<OsmNodeNamed> readWaypointList(String lonLats) {
     String[] coordinates = lonLats.split("\\;");
     if (coordinates.length < 2)
-      throw new IllegalArgumentException("At least two lat/lon points are required!");
+      throw new IllegalArgumentException("At least two lat/lon points are required.");
 
     List<OsmNodeNamed> waypointList = new ArrayList<>();
     for (int i = 0; i < coordinates.length; i++) {
       String[] lonLat = coordinates[i].split(",");
       if (lonLat.length < 2)
-        throw new IllegalArgumentException("Longitude and latitude are required!");
+        throw new IllegalArgumentException("Longitude and latitude are required.");
       waypointList.add(readPosition(lonLat[0], lonLat[1], "via" + i));
       if (lonLat.length > 2 && lonLat[2].equals("d")) {
           waypointList.get(waypointList.size()-1).direct = true;
@@ -71,44 +71,6 @@ public class RequestHandler implements IRequestHandler {
     waypointList.get(waypointList.size() - 1).name = "to";
 
     return waypointList;
-  }
-
-  @Override
-  public String formatTrack(OsmTrack track) {
-    String result;
-    // optional, may be null
-//    String format = params.get("format");
-//    String trackName = getTrackName();
-//    if (trackName != null) {
-//      track.name = trackName;
-//    }
-//    String exportWaypointsStr = params.get("exportWaypoints");
-//    if (exportWaypointsStr != null && Integer.parseInt(exportWaypointsStr) != 0) {
-//      track.exportWaypoints = true;
-//    }
-
-//    if (format == null || "gpx".equals(format)) {
-//      result = track.formatAsGpx();
-//    } else if ("kml".equals(format)) {
-//      result = track.formatAsKml();
-//    } else if ("geojson".equals(format)) {
-//      result = track.formatAsGeoJson();
-//    } else if ("csv".equals(format)) {
-//      try {
-//        StringWriter sw = new StringWriter();
-//        BufferedWriter bw = new BufferedWriter(sw);
-//        track.writeMessages(bw, rc);
-//        return sw.toString();
-//      } catch (Exception ex) {
-//        return "Error: " + ex.getMessage();
-//      }
-//    } else {
-//      System.out.println("unknown track format '" + format + "', using default");
-//      result = track.formatAsGpx();
-//    }
-    result = track.formatAsGeoJson();
-
-    return result;
   }
 
   private static OsmNodeNamed readPosition(String longitude, String latitude, String name) {

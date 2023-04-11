@@ -4,9 +4,6 @@ package com.routerbackend.utils;
  * Some methods for String handling
  */
 public class StringUtils {
-  private static char[] xmlChr = new char[]{'&', '<', '>', '\'', '"', '\t', '\n', '\r'};
-  private static String[] xmlEsc = new String[]{"&amp;", "&lt;", "&gt;", "&apos;", "&quot;", "&#x9;", "&#xA;", "&#xD;"};
-
   private static char[] jsnChr = new char[]{'\'', '"', '\\', '/'};
   private static String[] jsnEsc = new String[]{"\\'", "\\\"", "\\\\", "\\/"};
 
@@ -20,9 +17,6 @@ public class StringUtils {
   /**
    * Escape a literal to put into a xml document
    */
-  public static String escapeXml10(String s) {
-    return escape(s, xmlChr, xmlEsc);
-  }
 
   private static String escape(String s, char[] chr, String[] esc) {
     StringBuilder sb = null;

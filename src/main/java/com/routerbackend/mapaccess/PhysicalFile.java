@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 final public class PhysicalFile {
-  RandomAccessFile ra = null;
+  RandomAccessFile ra;
   long[] fileIndex = new long[25];
   int[] fileHeaderCrcs;
 
@@ -24,72 +24,7 @@ final public class PhysicalFile {
 
   public int divisor = 80;
 
-//  public static void main(String[] args) {
-//    MicroCache.debug = true;
-//
-//    try {
-//      checkFileIntegrity(new File(args[0]));
-//    } catch (IOException e) {
-//      System.err.println("************************************");
-//      e.printStackTrace();
-//      System.err.println("************************************");
-//    }
-//  }
-//
-//  public static int checkVersionIntegrity(File f) {
-//    int version = -1;
-//    RandomAccessFile raf = null;
-//    try {
-//      byte[] iobuffer = new byte[200];
-//      raf = new RandomAccessFile(f, "r");
-//      raf.readFully(iobuffer, 0, 200);
-//      ByteDataReader dis = new ByteDataReader(iobuffer);
-//      long lv = dis.readLong();
-//      version = (int) (lv >> 48);
-//    } catch (IOException e) {
-//    } finally {
-//      try {
-//        if (raf != null) raf.close();
-//      } catch (IOException e) {
-//        throw new RuntimeException(e);
-//      }
-//    }
-//    return version;
-//  }
-//
-//  /**
-//   * Checks the integrity of the file using the build-in checksums
-//   *
-//   * @return the error message if file corrupt, else null
-//   */
-//  public static String checkFileIntegrity(File f) throws IOException {
-//    PhysicalFile pf = null;
-//    try {
-//      DataBuffers dataBuffers = new DataBuffers();
-//      pf = new PhysicalFile(f, dataBuffers, -1, -1);
-//      int div = pf.divisor;
-//      for (int lonDegree = 0; lonDegree < 5; lonDegree++) // does'nt really matter..
-//      {
-//        for (int latDegree = 0; latDegree < 5; latDegree++) // ..where on earth we are
-//        {
-//          OsmFile osmf = new OsmFile(pf, lonDegree, latDegree, dataBuffers);
-//          if (osmf.hasData())
-//            for (int lonIdx = 0; lonIdx < div; lonIdx++)
-//              for (int latIdx = 0; latIdx < div; latIdx++)
-//                osmf.createMicroCache(lonDegree * div + lonIdx, latDegree * div + latIdx, dataBuffers, null, null, MicroCache.debug, null);
-//        }
-//      }
-//    } finally {
-//      if (pf != null)
-//        try {
-//          pf.ra.close();
-//        } catch (Exception ee) {
-//        }
-//    }
-//    return null;
-//  }
-
-  public PhysicalFile(File f, DataBuffers dataBuffers, int lookupVersion, int lookupMinorVersion) throws IOException {
+  public PhysicalFile(File f, DataBuffers dataBuffers, int lookupVersion) throws IOException {
     fileName = f.getName();
     byte[] iobuffer = dataBuffers.iobuffer;
     ra = new RandomAccessFile(f, "r");

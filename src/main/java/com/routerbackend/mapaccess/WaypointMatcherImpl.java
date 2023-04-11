@@ -230,8 +230,5 @@ public final class WaypointMatcherImpl implements WaypointMatcher {
     // use only shortest distances by smallest direction difference
     Collections.sort(ways, comparator);
     if (ways.size() > MAX_POINTS) ways.remove(MAX_POINTS);
-
   }
-
-
 }

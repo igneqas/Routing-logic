@@ -34,7 +34,7 @@ public class RouteController {
         } else {
             OsmTrack track = routingEngine.getFoundTrack();
             if (track != null) {
-                    return new ResponseEntity<>(requestHandler.formatTrack(track), HttpStatus.OK);
+                    return new ResponseEntity<>(track.formatAsGeoJson(), HttpStatus.OK);
             }
         }
         return new ResponseEntity<>("", HttpStatus.OK);

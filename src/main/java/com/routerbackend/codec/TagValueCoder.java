@@ -2,11 +2,6 @@ package com.routerbackend.codec;
 
 import com.routerbackend.utils.BitCoderContext;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.PriorityQueue;
-
 /**
  * Encoder/Decoder for way-/node-descriptions
  * <p>
@@ -17,30 +12,8 @@ import java.util.PriorityQueue;
  * but doesn't do anything at pass1
  */
 public final class TagValueCoder {
-  private Map<TagValueSet, TagValueSet> identityMap;
   private Object tree;
   private BitCoderContext bc;
-  private int pass;
-  private int nextTagValueSetId;
-
-  public void encodeTagValueSet(byte[] data) {
-    if (pass == 1) {
-      return;
-    }
-    TagValueSet tvsProbe = new TagValueSet(nextTagValueSetId);
-    tvsProbe.data = data;
-    TagValueSet tvs = identityMap.get(tvsProbe);
-    if (pass == 3) {
-      bc.encodeBounded(tvs.range - 1, tvs.code);
-    } else if (pass == 2) {
-      if (tvs == null) {
-        tvs = tvsProbe;
-        nextTagValueSetId++;
-        identityMap.put(tvs, tvs);
-      }
-      tvs.frequency++;
-    }
-  }
 
   public TagValueWrapper decodeTagValueSet() {
     Object node = tree;
@@ -52,34 +25,9 @@ public final class TagValueCoder {
     return (TagValueWrapper) node;
   }
 
-  public void encodeDictionary(BitCoderContext bc) {
-    if (++pass == 3) {
-      if (identityMap.size() == 0) {
-        TagValueSet dummy = new TagValueSet(nextTagValueSetId++);
-        identityMap.put(dummy, dummy);
-      }
-      PriorityQueue<TagValueSet> queue = new PriorityQueue<TagValueSet>(2 * identityMap.size(), new TagValueSet.FrequencyComparator());
-      queue.addAll(identityMap.values());
-      while (queue.size() > 1) {
-        TagValueSet node = new TagValueSet(nextTagValueSetId++);
-        node.child1 = queue.poll();
-        node.child2 = queue.poll();
-        node.frequency = node.child1.frequency + node.child2.frequency;
-        queue.add(node);
-      }
-      TagValueSet root = queue.poll();
-      root.encode(bc, 1, 0);
-    }
-    this.bc = bc;
-  }
-
   public TagValueCoder(BitCoderContext bc, DataBuffers buffers, TagValueValidator validator) {
     tree = decodeTree(bc, buffers, validator);
     this.bc = bc;
-  }
-
-  public TagValueCoder() {
-    identityMap = new HashMap<TagValueSet, TagValueSet>();
   }
 
   private Object decodeTree(BitCoderContext bc, DataBuffers buffers, TagValueValidator validator) {
@@ -144,103 +92,5 @@ public final class TagValueCoder {
   public static final class TreeNode {
     public Object child1;
     public Object child2;
-  }
-
-  public static final class TagValueSet {
-    public byte[] data;
-    public int frequency;
-    public int code;
-    public int range;
-    public TagValueSet child1;
-    public TagValueSet child2;
-    private int id; // serial number to make the comparator well defined in case of equal frequencies
-
-    public TagValueSet(int id) {
-      this.id = id;
-    }
-
-    public void encode(BitCoderContext bc, int range, int code) {
-      this.range = range;
-      this.code = code;
-      boolean isNode = child1 != null;
-      bc.encodeBit(isNode);
-      if (isNode) {
-        child1.encode(bc, range << 1, code);
-        child2.encode(bc, range << 1, code + range);
-      } else {
-        if (data == null) {
-          bc.encodeVarBits(0);
-          return;
-        }
-        BitCoderContext src = new BitCoderContext(data);
-        for (; ; ) {
-          int delta = src.decodeVarBits();
-          bc.encodeVarBits(delta);
-          if (delta == 0) {
-            break;
-          }
-          int data = src.decodeVarBits();
-          bc.encodeVarBits(data);
-        }
-      }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (o instanceof TagValueSet) {
-        TagValueSet tvs = (TagValueSet) o;
-        if (data == null) {
-          return tvs.data == null;
-        }
-        if (tvs.data == null) {
-          return data == null;
-        }
-        if (data.length != tvs.data.length) {
-          return false;
-        }
-        for (int i = 0; i < data.length; i++) {
-          if (data[i] != tvs.data[i]) {
-            return false;
-          }
-        }
-        return true;
-      }
-      return false;
-    }
-
-    @Override
-    public int hashCode() {
-      if (data == null) {
-        return 0;
-      }
-      int h = 17;
-      for (int i = 0; i < data.length; i++) {
-        h = (h << 8) + data[i];
-      }
-      return h;
-    }
-
-    public static class FrequencyComparator implements Comparator<TagValueSet> {
-
-      @Override
-      public int compare(TagValueSet tvs1, TagValueSet tvs2) {
-        if (tvs1.frequency < tvs2.frequency)
-          return -1;
-        if (tvs1.frequency > tvs2.frequency)
-          return 1;
-
-        // to avoid ordering instability, decide on the id if frequency is equal
-        if (tvs1.id < tvs2.id)
-          return -1;
-        if (tvs1.id > tvs2.id)
-          return 1;
-
-        if (tvs1 != tvs2) {
-          throw new RuntimeException("identity corruption!");
-        }
-        return 0;
-      }
-    }
-
   }
 }

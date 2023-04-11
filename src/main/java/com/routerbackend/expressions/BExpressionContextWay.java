@@ -66,10 +66,6 @@ public final class BExpressionContextWay extends BExpressionContext implements T
     return getBuildInVariable(11);
   }
 
-  public BExpressionContextWay(BExpressionMetaData meta) {
-    super("way", meta);
-  }
-
   /**
    * Create an Expression-Context for way context
    *
