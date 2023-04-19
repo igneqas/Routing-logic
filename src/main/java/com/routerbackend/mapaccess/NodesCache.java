@@ -20,12 +20,10 @@ import java.util.Map;
 
 public final class NodesCache {
   private File segmentDir;
-  private File secondarySegmentsDir;
 
   public OsmNodesMap nodesMap;
   private BExpressionContextWay expCtxWay;
   private int lookupVersion;
-  private int lookupMinorVersion;
   private boolean forceSecondaryData;
   private String currentFileName;
 
@@ -46,13 +44,6 @@ public final class NodesCache {
   private boolean garbageCollectionEnabled = false;
   private boolean ghostCleaningDone = false;
 
-
-  private long cacheSumClean = 0;
-  private long ghostSum = 0;
-  private long ghostWakeup = 0;
-
-  private boolean directWeaving = !Boolean.getBoolean("disableDirectWeaving");
-
   public NodesCache(File segmentDir, BExpressionContextWay ctxWay, boolean forceSecondaryData, long maxmem, NodesCache oldCache, boolean detailed) {
     this.maxmemtiles = maxmem / 8;
     this.segmentDir = segmentDir;
@@ -60,7 +51,6 @@ public final class NodesCache {
     this.nodesMap.maxmem = (2L * maxmem) / 3L;
     this.expCtxWay = ctxWay;
     this.lookupVersion = ctxWay.meta.lookupVersion;
-    this.lookupMinorVersion = ctxWay.meta.lookupMinorVersion;
     this.forceSecondaryData = forceSecondaryData;
     this.detailed = detailed;
 
@@ -77,7 +67,6 @@ public final class NodesCache {
     if (oldCache != null) {
       fileCache = oldCache.fileCache;
       dataBuffers = oldCache.dataBuffers;
-      secondarySegmentsDir = oldCache.secondarySegmentsDir;
 
       // re-use old, virgin caches (if same detail-mode)
       if (oldCache.detailed == detailed) {
@@ -96,9 +85,7 @@ public final class NodesCache {
       fileCache = new HashMap<String, PhysicalFile>(4);
       fileRows = new OsmFile[180][];
       dataBuffers = new DataBuffers();
-      secondarySegmentsDir = StorageConfigHelper.getSecondarySegmentDir(segmentDir);
     }
-    ghostSum = cacheSum;
   }
 
   public void clean(boolean all) {
@@ -136,7 +123,6 @@ public final class NodesCache {
       ghostCleaningDone = true;
       maxmemtiles *= 2;
     } else {
-      cacheSumClean = cacheSum;
       garbageCollectionEnabled = true;
     }
   }
@@ -177,12 +163,11 @@ public final class NodesCache {
       MicroCache segment = osmf.getMicroCache(ilon, ilat);
       if (segment == null) {
         checkEnableCacheCleaning();
-        segment = osmf.createMicroCache(ilon, ilat, dataBuffers, expCtxWay, waypointMatcher, directWeaving ? nodesMap : null);
+        segment = osmf.createMicroCache(ilon, ilat, dataBuffers, expCtxWay, waypointMatcher, nodesMap);
 
         cacheSum += segment.getDataSize();
       } else if (segment.ghost) {
         segment.unGhost();
-        ghostWakeup += segment.getDataSize();
       }
       return segment;
     } catch (IOException re) {
@@ -324,12 +309,6 @@ public final class NodesCache {
           f = primary;
         }
       }
-      if (f == null) {
-        File secondary = new File(secondarySegmentsDir, filenameBase + ".rd5");
-        if (secondary.exists()) {
-          f = secondary;
-        }
-      }
       if (f != null) {
         currentFileName = f.getName();
         ra = new PhysicalFile(f, dataBuffers, lookupVersion);
@@ -345,16 +324,5 @@ public final class NodesCache {
     }
 
     return osmf;
-  }
-
-  public void close() {
-    for (PhysicalFile f : fileCache.values()) {
-      try {
-        if (f != null)
-          f.ra.close();
-      } catch (IOException ioe) {
-        // ignore
-      }
-    }
   }
 }

@@ -27,8 +27,6 @@ public final class RoutingContext {
 
   public Map<String, String> keyValues;
 
-  public String rawTrackPath;
-
   public BExpressionContextWay expressionContextWay;
   public BExpressionContextNode expressionContextNode;
 
@@ -235,7 +233,7 @@ public final class RoutingContext {
   /**
    * restore the full nogolist previously saved by cleanNogoList
    */
-  public void restoreNogoList() {
+  public void restoreNoGoList() {
     noGoPoints = nogopoints_all;
   }
 
@@ -245,7 +243,7 @@ public final class RoutingContext {
    *
    * @return true if all wayoints are all in the same (full-weigth) nogo area (triggering bee-line-mode)
    */
-  public void cleanNogoList(List<OsmNode> waypoints) {
+  public void cleanNoGoList(List<OsmNode> waypoints) {
     nogopoints_all = noGoPoints;
     if (noGoPoints == null) return;
     List<OsmNodeNamed> nogos = new ArrayList<OsmNodeNamed>();
@@ -337,7 +335,7 @@ public final class RoutingContext {
 
   public void setWaypoint(OsmNodeNamed wp, OsmNodeNamed pendingEndpoint, boolean endpoint) {
     keepnogopoints = noGoPoints;
-    noGoPoints = new ArrayList<OsmNodeNamed>();
+    noGoPoints = new ArrayList<>();
     noGoPoints.add(wp);
     if (keepnogopoints != null) noGoPoints.addAll(keepnogopoints);
     isEndpoint = endpoint;

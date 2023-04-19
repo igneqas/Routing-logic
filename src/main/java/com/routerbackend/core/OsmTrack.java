@@ -49,8 +49,6 @@ public final class OsmTrack {
 
   private CompactLongMap<OsmPathElementHolder> detourMap;
 
-  private VoiceHintList voiceHints;
-
   public String name = "unset";
 
   protected List<MatchedWaypoint> matchedWaypoints;
@@ -211,25 +209,11 @@ public final class OsmTrack {
       }
     }
 
-    if (t.voiceHints != null) {
-      if (ourSize > 0) {
-        for (VoiceHint hint : t.voiceHints.list) {
-          hint.indexInTrack = hint.indexInTrack + ourSize - 1;
-        }
-      }
-      if (voiceHints == null) {
-        voiceHints = t.voiceHints;
-      } else {
-        voiceHints.list.addAll(t.voiceHints.list);
-      }
-    } else {
       if (detourMap == null) {
-        //copyDetours( t );
         detourMap = t.detourMap;
       } else {
         addDetours(t);
       }
-    }
 
     distance += t.distance;
     ascend += t.ascend;
@@ -244,8 +228,6 @@ public final class OsmTrack {
   public List<String> iternity;
 
   public String formatAsGeoJson() {
-    int turnInstructionMode = voiceHints != null ? voiceHints.turnInstructionMode : 0;
-
     StringBuilder sb = new StringBuilder(8192);
 
     sb.append("{\n");
@@ -262,27 +244,7 @@ public final class OsmTrack {
     sb.append("        \"total-time\": \"").append(getTotalSeconds()).append("\",\n");
     sb.append("        \"total-energy\": \"").append(energy).append("\",\n");
     sb.append("        \"cost\": \"").append(cost).append("\",\n");
-    if (voiceHints != null && !voiceHints.list.isEmpty()) {
-      sb.append("        \"voicehints\": [\n");
-      for (VoiceHint hint : voiceHints.list) {
-        sb.append("          [");
-        sb.append(hint.indexInTrack);
-        sb.append(',').append(hint.getCommand());
-        sb.append(',').append(hint.getExitNumber());
-        sb.append(',').append(hint.distanceToNext);
-        sb.append(',').append((int) hint.angle);
 
-        // not always include geometry because longer and only needed for comment style
-        if (turnInstructionMode == 4) // comment style
-        {
-          sb.append(",\"").append(hint.formatGeometry()).append("\"");
-        }
-
-        sb.append("],\n");
-      }
-      sb.deleteCharAt(sb.lastIndexOf(","));
-      sb.append("        ],\n");
-    }
     if (showSpeedProfile) // set in profile
     {
       List<String> sp = aggregateSpeedProfile();
@@ -410,16 +372,6 @@ public final class OsmTrack {
     sb.append("    }");
   }
 
-  private MatchedWaypoint getMatchedWaypoint(int idx) {
-    if (matchedWaypoints == null) return null;
-    for (MatchedWaypoint wp : matchedWaypoints) {
-      if (idx == wp.indexInTrack) {
-        return wp;
-      }
-    }
-    return null;
-  }
-
   private int getVNode(int i) {
     MessageData m1 = i + 1 < nodes.size() ? nodes.get(i + 1).message : null;
     MessageData m0 = i < nodes.size() ? nodes.get(i).message : null;
@@ -462,122 +414,5 @@ public final class OsmTrack {
     if (detourMap == null)
       return null;
     return detourMap.get(id);
-  }
-
-  public void prepareSpeedProfile(RoutingContext rc) {
-    // sendSpeedProfile = rc.keyValues != null && rc.keyValues.containsKey( "vmax" );
-  }
-
-  public void processVoiceHints(RoutingContext rc) {
-    voiceHints = new VoiceHintList();
-    voiceHints.setTransportMode(rc.carMode, rc.bikeMode);
-    voiceHints.turnInstructionMode = rc.turnInstructionMode;
-
-    if (detourMap == null) {
-      return;
-    }
-    int nodeNr = nodes.size() - 1;
-    int i = nodeNr;
-    OsmPathElement node = nodes.get(nodeNr);
-    while (node != null) {
-      if (node.origin != null) {
-      }
-      node = node.origin;
-    }
-
-    i = 0;
-
-    node = nodes.get(nodeNr);
-    List<VoiceHint> inputs = new ArrayList<VoiceHint>();
-    while (node != null) {
-      if (node.origin != null) {
-        VoiceHint input = new VoiceHint();
-        inputs.add(input);
-        input.ilat = node.origin.getILat();
-        input.ilon = node.origin.getILon();
-        input.selev = node.origin.getSElev();
-        input.indexInTrack = --nodeNr;
-        input.goodWay = node.message;
-        input.oldWay = node.origin.message == null ? node.message : node.origin.message;
-        if (rc.turnInstructionMode == 8 ||
-          rc.turnInstructionMode == 4 ||
-          rc.turnInstructionMode == 2 ||
-          rc.turnInstructionMode == 9) {
-          MatchedWaypoint mwpt = getMatchedWaypoint(nodeNr);
-          if (mwpt != null && mwpt.direct) {
-            input.cmd = VoiceHint.BL;
-            input.angle = (float) (nodeNr == 0 ? node.origin.message.turnangle : node.message.turnangle);
-            input.distanceToNext = node.calcDistance(node.origin);
-          }
-        }
-        OsmPathElementHolder detours = detourMap.get(node.origin.getIdFromPos());
-        if (nodeNr >= 0 && detours != null) {
-          OsmPathElementHolder h = detours;
-          while (h != null) {
-            OsmPathElement e = h.node;
-            input.addBadWay(startSection(e, node.origin));
-            h = h.nextHolder;
-          }
-        } else if (nodeNr == 0 && detours != null) {
-          OsmPathElementHolder h = detours;
-          OsmPathElement e = h.node;
-          input.addBadWay(startSection(e, e));
-        }
-      }
-      node = node.origin;
-    }
-
-    VoiceHintProcessor vproc = new VoiceHintProcessor(rc.turnInstructionCatchingRange, rc.turnInstructionRoundabouts);
-    List<VoiceHint> results = vproc.process(inputs);
-
-    double minDistance = getMinDistance();
-    List<VoiceHint> resultsLast = vproc.postProcess(results, rc.turnInstructionCatchingRange, minDistance);
-    for (VoiceHint hint : resultsLast) {
-      voiceHints.list.add(hint);
-    }
-
-  }
-
-  int getMinDistance() {
-    if (voiceHints != null) {
-      switch (voiceHints.getTransportMode()) {
-        case "car":
-          return 20;
-        case "bike":
-          return 5;
-        case "foot":
-          return 3;
-        default:
-          return 5;
-      }
-    }
-    return 2;
-  }
-
-  public void removeVoiceHint(int i) {
-    if (voiceHints != null) {
-      VoiceHint remove = null;
-      for (VoiceHint vh : voiceHints.list) {
-        if (vh.indexInTrack == i)
-          remove = vh;
-      }
-      if (remove != null)
-        voiceHints.list.remove(remove);
-    }
-  }
-
-  private MessageData startSection(OsmPathElement element, OsmPathElement root) {
-    OsmPathElement e = element;
-    int cnt = 0;
-    while (e != null && e.origin != null) {
-      if (e.origin.getILat() == root.getILat() && e.origin.getILon() == root.getILon()) {
-        return e.message;
-      }
-      e = e.origin;
-      if (cnt++ == 1000000) {
-        throw new IllegalArgumentException("ups: " + root + "->" + element);
-      }
-    }
-    return null;
   }
 }

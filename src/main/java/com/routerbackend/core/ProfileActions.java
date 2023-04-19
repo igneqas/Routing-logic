@@ -36,9 +36,4 @@ public final class ProfileActions {
     }
   }
 
-  public static void releaseProfile(RoutingContext routingContext) {
-    routingContext.expressionContextWay = null;
-    routingContext.expressionContextNode = null;
-  }
-
 }
