@@ -1,11 +1,11 @@
 package com.routerbackend.controllers;
 
-import com.routerbackend.core.OsmNodeNamed;
-import com.routerbackend.core.OsmTrack;
-import com.routerbackend.core.RoutingContext;
-import com.routerbackend.core.RoutingEngine;
-import com.routerbackend.requesthandling.incomingrequest.IRequestHandler;
-import com.routerbackend.requesthandling.incomingrequest.RequestHandler;
+import com.routerbackend.routinglogic.core.OsmNodeNamed;
+import com.routerbackend.routinglogic.core.OsmTrack;
+import com.routerbackend.routinglogic.core.RoutingContext;
+import com.routerbackend.routinglogic.core.RoutingEngine;
+import com.routerbackend.requesthandling.incomingrequest.routing.IRequestHandler;
+import com.routerbackend.requesthandling.incomingrequest.routing.RequestHandler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
