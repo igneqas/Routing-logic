@@ -1,6 +1,7 @@
 package com.routerbackend.dtos;
 
 import com.routerbackend.dtos.utils.Coordinates;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
@@ -8,6 +9,8 @@ import java.util.List;
 
 @Document(collection = "routes")
 public class RouteDTO {
+    @Id
+    String _id;
     String name;
     String userId;
     Date dateCreated;

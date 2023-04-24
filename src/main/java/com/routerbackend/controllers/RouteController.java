@@ -14,6 +14,7 @@ import com.routerbackend.requesthandling.incomingrequest.routing.RequestHandler;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -71,6 +72,20 @@ public class RouteController {
         List<Coordinates> coordinates = JsonToCoordinates(jsonObject.getJSONArray("coordinates"));
         RouteDTO routeDTO = new RouteDTO(name, userId, dateCreated, length, duration, tripType, coordinates);
         routeRepository.save(routeDTO);
+        return new ResponseEntity<>("", HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/getSavedRoutes")
+    @CrossOrigin(origins = "http://localhost:3000")
+    public ResponseEntity<String> getSavedRoutes(){
+        List<RouteDTO> routes = routeRepository.findByUserId("546");
+        return new ResponseEntity<>(routes.toString(), HttpStatus.OK);
+    }
+
+    @DeleteMapping
+    @CrossOrigin(origins = "http://localhost:3000")
+    public ResponseEntity<String> deleteRoute(@RequestParam("id") String id){
+        routeRepository.deleteById(id);
         return new ResponseEntity<>("", HttpStatus.OK);
     }
 }
