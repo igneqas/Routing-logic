@@ -63,7 +63,7 @@ public class RouteController {
         JSONObject jsonObject = new JSONObject(body);
         String name = jsonObject.getString("name");
         String userId = jsonObject.getString("userId");
-        UserDTO user = userRepository.findByEmail("ignas@gmail.com");
+        UserDTO user = userRepository.findByEmail("ignas@gmail.com").get();
         System.out.println(user);
         Date dateCreated = new Date();
         double length = jsonObject.getDouble("length");
