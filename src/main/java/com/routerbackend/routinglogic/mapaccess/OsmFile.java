@@ -197,8 +197,8 @@ final class OsmFile {
   }
 
   void clean(boolean all) {
-    int nc = microCaches == null ? 0 : microCaches.length;
-    for (int i = 0; i < nc; i++) {
+    int microCachesSize = microCaches == null ? 0 : microCaches.length;
+    for (int i = 0; i < microCachesSize; i++) {
       MicroCache mc = microCaches[i];
       if (mc == null)
         continue;

@@ -116,7 +116,7 @@ public final class RoutingContext {
     if (noGoPoints == null) return;
     List<MatchedWaypoint> newMatchedWaypoints = new ArrayList<>(matchedWaypoints);
     if (newMatchedWaypoints.size() < 2) {
-      throw new IllegalArgumentException("a wpt in restricted area ");
+      throw new IllegalArgumentException("a waypoint is in a restricted area ");
     }
   }
 

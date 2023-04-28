@@ -83,11 +83,11 @@ public final class NodesCache {
   }
 
   public void clean(boolean all) {
-    for (OsmFile[] fileRow : mapFiles) {
-      if (fileRow == null)
+    for (OsmFile[] mapFile : mapFiles) {
+      if (mapFile == null)
         continue;
-      for (OsmFile osmf : fileRow) {
-        osmf.clean(all);
+      for (OsmFile osmFile : mapFile) {
+        osmFile.clean(all);
       }
     }
   }
@@ -255,15 +255,15 @@ public final class NodesCache {
     }
   }
 
-  private void preloadPosition(OsmNode n) {
+  private void preloadPosition(OsmNode node) {
     int d = 12500;
     first_file_access_failed = false;
     first_file_access_name = null;
-    loadSegmentFor(n.longitude, n.latitude);
+    loadSegmentFor(node.longitude, node.latitude);
     for (int idxLat = -1; idxLat <= 1; idxLat++)
       for (int idxLon = -1; idxLon <= 1; idxLon++) {
         if (idxLon != 0 || idxLat != 0) {
-          loadSegmentFor(n.longitude + d * idxLon, n.latitude + d * idxLat);
+          loadSegmentFor(node.longitude + d * idxLon, node.latitude + d * idxLat);
         }
       }
   }
