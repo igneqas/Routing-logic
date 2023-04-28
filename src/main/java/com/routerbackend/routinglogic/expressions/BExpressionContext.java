@@ -33,17 +33,9 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
   private List<String> lookupNames = new ArrayList<String>();
   private List<int[]> lookupHistograms = new ArrayList<int[]>();
   private boolean[] lookupIdxUsed;
-
-  private boolean lookupDataFrozen = false;
-
   private int[] lookupData = new int[0];
-
-  private byte[] abBuf = new byte[256];
-  private BitCoderContext ctxEndode = new BitCoderContext(abBuf);
   private BitCoderContext ctxDecode = new BitCoderContext(new byte[0]);
-
   private Map<String, Integer> variableNumbers = new HashMap<String, Integer>();
-
   private float[] variableData;
 
 
@@ -80,11 +72,6 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
   private int linenr;
 
   public BExpressionMetaData meta;
-  private boolean lookupDataValid = false;
-
-  protected BExpressionContext(String context, BExpressionMetaData meta) {
-    this(context, 4096, meta);
-  }
 
   /**
    * Create an Expression-Context for the given node
@@ -105,62 +92,6 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
       cache = new LruMap(4 * hashSize, hashSize);
       resultVarCache = new LruMap(4096, 4096);
     }
-  }
-
-  /**
-   * encode internal lookup data to a byte array
-   */
-  public byte[] encode() {
-    if (!lookupDataValid)
-      throw new IllegalArgumentException("internal error: encoding undefined data?");
-    return encode(lookupData);
-  }
-
-  public byte[] encode(int[] ld) {
-    BitCoderContext ctx = ctxEndode;
-    ctx.reset();
-
-    int skippedTags = 0;
-    int nonNullTags = 0;
-
-    // (skip first bit ("reversedirection") )
-
-    // all others are generic
-    for (int inum = 1; inum < lookupValues.size(); inum++) // loop over lookup names
-    {
-      int d = ld[inum];
-      if (d == 0) {
-        skippedTags++;
-        continue;
-      }
-      ctx.encodeVarBits(skippedTags + 1);
-      nonNullTags++;
-      skippedTags = 0;
-
-      // 0 excluded already, 1 (=unknown) we rotate up to 8
-      // to have the good code space for the popular values
-      int dd = d < 2 ? 7 : (d < 9 ? d - 2 : d - 1);
-      ctx.encodeVarBits(dd);
-    }
-    ctx.encodeVarBits(0);
-
-    if (nonNullTags == 0) return null;
-
-    int len = ctx.closeAndGetEncodedLength();
-    byte[] ab = new byte[len];
-    System.arraycopy(abBuf, 0, ab, 0, len);
-
-
-    // crosscheck: decode and compare
-    int[] ld2 = new int[lookupValues.size()];
-    decode(ld2, false, ab);
-    for (int inum = 1; inum < lookupValues.size(); inum++) // loop over lookup names (except reverse dir)
-    {
-      if (ld2[inum] != ld[inum])
-        throw new RuntimeException("assertion failed encoding inum=" + inum + " val=" + ld[inum] + " " + getKeyValueDescription(false, ab));
-    }
-
-    return ab;
   }
 
   /**
@@ -208,7 +139,7 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
   }
 
   public float getLookupValue(int key) {
-    float res = 0f;
+    float res;
     int val = lookupData[key];
     if (val == 0) return Float.NaN;
     res = (val - 1000) / 100f;
@@ -244,9 +175,6 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
       throw new IllegalArgumentException("lookup table does not contain data for context " + context + " (old version?)");
     }
 
-    // post-process metadata:
-    lookupDataFrozen = true;
-
     lookupIdxUsed = new boolean[lookupValues.size()];
   }
 
@@ -256,9 +184,8 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
   }
 
   private void evaluate() {
-    int n = expressionList.size();
-    for (int expidx = 0; expidx < n; expidx++) {
-      expressionList.get(expidx).evaluate(this);
+    for (BExpression bExpression : expressionList) {
+      bExpression.evaluate(this);
     }
   }
 
@@ -292,8 +219,6 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
 
 
   public final void evaluate(boolean inverseDirection, byte[] ab) {
-    lookupDataValid = false; // this is an assertion for a nasty pifall
-
     if (cache == null) {
       decode(lookupData, inverseDirection, ab);
       if (currentVars == null || currentVars.length != nBuildInVars) {
@@ -363,16 +288,6 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
       int idx = buildInVariableIdx[vi];
       vars[vi + offset] = idx == -1 ? 0.f : variableData[idx];
     }
-  }
-
-  /**
-   * @return a new lookupData array, or null if no metadata defined
-   */
-  public int[] createNewLookupData() {
-    if (lookupDataFrozen) {
-      return new int[lookupValues.size()];
-    }
-    return null;
   }
 
   /**
@@ -520,9 +435,6 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
         return newValue;
       }
 
-      if (i == 499) {
-        // System.out.println( "value limit reached for: " + name );
-      }
       if (i == 500) {
         return newValue;
       }
@@ -640,22 +552,6 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
     return result;
   }
 
-  public void setVariableValue(String name, float value, boolean create) {
-    Integer num = variableNumbers.get(name);
-    if (num != null) {
-      variableData[num.intValue()] = value;
-    } else if (create) {
-      num = getVariableIdx(name, create);
-      float[] readOnlyData = variableData;
-      int minWriteIdx = readOnlyData.length;
-      variableData = new float[variableNumbers.size()];
-      for (int i = 0; i < minWriteIdx; i++) {
-        variableData[i] = readOnlyData[i];
-      }
-      variableData[num.intValue()] = value;
-    }
-  }
-
   public float getVariableValue(String name, float defaultValue) {
     Integer num = variableNumbers.get(name);
     return num == null ? defaultValue : getVariableValue(num.intValue());
@@ -702,12 +598,6 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
 
   public final boolean isLookupIdxUsed(int idx) {
     return idx < lookupIdxUsed.length && lookupIdxUsed[idx];
-  }
-
-  public final void setAllTagsUsed() {
-    for (int i = 0; i < lookupIdxUsed.length; i++) {
-      lookupIdxUsed[i] = true;
-    }
   }
 
   int getLookupValueIdx(int nameIdx, String value) {
