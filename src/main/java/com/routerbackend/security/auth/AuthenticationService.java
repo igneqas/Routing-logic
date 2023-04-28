@@ -5,14 +5,13 @@ import com.routerbackend.dtos.UserDTO;
 import com.routerbackend.repositories.TokenRepository;
 import com.routerbackend.repositories.UserRepository;
 import com.routerbackend.security.config.JwtService;
-import com.routerbackend.security.token.Token;
+import com.routerbackend.dtos.TokenDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +31,7 @@ public class AuthenticationService {
     AuthenticationManager authenticationManager;
 
     public AuthenticationResponse register(RegisterRequest request) {
-        var password = new BCryptPasswordEncoder().encode(request.getPassword());
+        var password = passwordEncoder.encode(request.getPassword());
         UserDTO user = new UserDTO(request.getUsername(), request.getEmail(), password);
         var savedUser = repository.save(user);
         var jwtToken = jwtService.generateToken(user);
@@ -58,7 +57,7 @@ public class AuthenticationService {
     }
 
     private void saveUserToken(UserDTO user, String jwtToken) {
-        var token = new Token(jwtToken, false, false, user.get_id());
+        var token = new TokenDTO(jwtToken, false, false, user.get_id());
         tokenRepository.save(token);
     }
 

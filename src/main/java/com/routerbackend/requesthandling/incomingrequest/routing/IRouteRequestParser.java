@@ -5,7 +5,7 @@ import com.routerbackend.routinglogic.core.RoutingContext;
 
 import java.util.List;
 
-public interface IRequestHandler {
+public interface IRouteRequestParser {
   RoutingContext readRoutingContext(String profile, String alternativeIdx);
 
   List<OsmNodeNamed> readWaypointList(String lonLats);

@@ -236,12 +236,12 @@ public final class OsmTrack {
     sb.append("    {\n");
     sb.append("      \"type\": \"Feature\",\n");
     sb.append("      \"properties\": {\n");
-    sb.append("        \"creator\": \"BRouter-" + version + "\",\n");
+//    sb.append("        \"creator\": \"BRouter-" + version + "\",\n");
     sb.append("        \"name\": \"").append(name).append("\",\n");
-    sb.append("        \"track-length\": \"").append(distance).append("\",\n");
-    sb.append("        \"filtered ascend\": \"").append(ascend).append("\",\n");
+    sb.append("        \"trackLength\": \"").append(distance).append("\",\n");
+    sb.append("        \"filteredAscend\": \"").append(ascend).append("\",\n");
     sb.append("        \"plain-ascend\": \"").append(plainAscend).append("\",\n");
-    sb.append("        \"total-time\": \"").append(getTotalSeconds()).append("\",\n");
+    sb.append("        \"totalTime\": \"").append(getTotalSeconds()).append("\",\n");
     sb.append("        \"total-energy\": \"").append(energy).append("\",\n");
     sb.append("        \"cost\": \"").append(cost).append("\",\n");
 

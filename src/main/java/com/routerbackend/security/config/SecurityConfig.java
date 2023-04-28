@@ -25,11 +25,12 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf()
+        http.csrf()
                 .disable()
                 .authorizeHttpRequests()
                 .requestMatchers("/api/v1/**")
+                .permitAll()
+                .requestMatchers("/route/generate")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
@@ -42,8 +43,9 @@ public class SecurityConfig {
                 .logout()
                 .logoutUrl("/api/v1/auth/logout")
                 .addLogoutHandler(logoutHandler)
-                .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext())
-        ;
+                .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext());
+
+        http.cors();
 
         return http.build();
     }

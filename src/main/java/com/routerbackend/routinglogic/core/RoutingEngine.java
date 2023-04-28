@@ -20,8 +20,6 @@ public class RoutingEngine extends Thread {
   private int MAXNODES_ISLAND_CHECK = 500;
   private OsmNodePairSet islandNodePairs = new OsmNodePairSet(MAXNODES_ISLAND_CHECK);
 
-  private int MAX_STEPS_CHECK = 10;
-
   protected OsmTrack foundTrack = new OsmTrack();
   private OsmTrack foundRawTrack = null;
 
@@ -54,7 +52,7 @@ public class RoutingEngine extends Thread {
       OsmTrack track;
       for (int i = 0; ; i++) {
         track = findTrack(refTracks, lastTracks);
-        track.name = "brouter_" + routingContext.getProfileName() + "_" + i;
+        track.name = routingContext.getProfileName();
           if (i == routingContext.getAlternativeIdx(0, 3)) {
             foundTrack = track;
             break;

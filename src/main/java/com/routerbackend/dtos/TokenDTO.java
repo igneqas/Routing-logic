@@ -1,10 +1,10 @@
-package com.routerbackend.security.token;
+package com.routerbackend.dtos;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document("tokens")
-public class Token {
+public class TokenDTO {
 
     @Id
     public String _id;
@@ -57,7 +57,7 @@ public class Token {
         this.userId = userId;
     }
 
-    public Token(String token, boolean revoked, boolean expired, String userId) {
+    public TokenDTO(String token, boolean revoked, boolean expired, String userId) {
         this.token = token;
         this.revoked = revoked;
         this.expired = expired;

@@ -18,8 +18,9 @@ public class RouteDTO {
     int duration;
     String tripType;
     List<Coordinates> coordinates;
+    int ascend;
 
-    public RouteDTO(String name, String userId, Date dateCreated, double length, int duration, String tripType, List<Coordinates> coordinates) {
+    public RouteDTO(String name, String userId, Date dateCreated, double length, int duration, String tripType, List<Coordinates> coordinates, int ascend) {
         this.name = name;
         this.userId = userId;
         this.dateCreated = dateCreated;
@@ -27,18 +28,57 @@ public class RouteDTO {
         this.duration = duration;
         this.tripType = tripType;
         this.coordinates = coordinates;
+        this.ascend = ascend;
     }
 
     @Override
     public String toString() {
         return "RouteDTO{" +
-                "name='" + name + '\'' +
+                "_id='" + _id + '\'' +
+                ", name='" + name + '\'' +
                 ", userId='" + userId + '\'' +
                 ", dateCreated=" + dateCreated +
                 ", length=" + length +
                 ", duration=" + duration +
                 ", tripType='" + tripType + '\'' +
                 ", coordinates=" + coordinates +
+                ", ascend=" + ascend +
                 '}';
+    }
+
+    public String get_id() {
+        return _id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public Date getDateCreated() {
+        return dateCreated;
+    }
+
+    public double getLength() {
+        return length;
+    }
+
+    public int getDuration() {
+        return duration;
+    }
+
+    public String getTripType() {
+        return tripType;
+    }
+
+    public List<Coordinates> getCoordinates() {
+        return coordinates;
+    }
+
+    public int getAscend() {
+        return ascend;
     }
 }

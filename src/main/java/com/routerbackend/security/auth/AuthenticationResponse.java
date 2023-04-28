@@ -1,6 +1,7 @@
 package com.routerbackend.security.auth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.json.JSONObject;
 
 public class AuthenticationResponse {
 
@@ -14,9 +15,9 @@ public class AuthenticationResponse {
 
     @Override
     public String toString() {
-        return "AuthenticationResponse{" +
-                "accessToken='" + accessToken + '\'' +
-                ", refreshToken='" + refreshToken + '\'' +
-                '}';
+        return new JSONObject()
+                .put("accessToken", accessToken)
+                .put("refreshToken", refreshToken)
+                .toString();
     }
 }

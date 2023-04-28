@@ -30,7 +30,7 @@ import java.util.Objects;
  * {@code http://localhost:17777/brouter?lonlats=1.1,1.2|2.1,2.2|3.1,3.2|4.1,4.2&nogos=-1.1,-1.2,1|-2.1,-2.2,2&profile=shortest&alternativeidx=1&format=kml&trackname=Ride&pois=1.1,2.1,Barner Bar}
  */
 
-public class RequestHandler implements IRequestHandler {
+public class RouteRequestParser implements IRouteRequestParser {
 
   @Override
   public RoutingContext readRoutingContext(String profile, String alternativeIdx) {
