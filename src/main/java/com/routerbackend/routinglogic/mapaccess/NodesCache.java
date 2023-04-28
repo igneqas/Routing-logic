@@ -31,7 +31,7 @@ public final class NodesCache {
   private Map<String, PhysicalFile> fileCache;
   private DataBuffers dataBuffers;
 
-  private OsmFile[][] fileRows;
+  private OsmFile[][] mapFiles;
 
   public WaypointMatcher waypointMatcher;
 
@@ -64,8 +64,8 @@ public final class NodesCache {
 
       // re-use old, virgin caches (if same detail-mode)
       if (oldCache.detailed == detailed) {
-        fileRows = oldCache.fileRows;
-        for (OsmFile[] fileRow : fileRows) {
+        mapFiles = oldCache.mapFiles;
+        for (OsmFile[] fileRow : mapFiles) {
           if (fileRow == null)
             continue;
           for (OsmFile osmf : fileRow) {
@@ -73,17 +73,17 @@ public final class NodesCache {
           }
         }
       } else {
-        fileRows = new OsmFile[180][];
+        mapFiles = new OsmFile[180][];
       }
     } else {
-      fileCache = new HashMap<String, PhysicalFile>(4);
-      fileRows = new OsmFile[180][];
+      fileCache = new HashMap<>(4);
+      mapFiles = new OsmFile[180][];
       dataBuffers = new DataBuffers();
     }
   }
 
   public void clean(boolean all) {
-    for (OsmFile[] fileRow : fileRows) {
+    for (OsmFile[] fileRow : mapFiles) {
       if (fileRow == null)
         continue;
       for (OsmFile osmf : fileRow) {
@@ -99,8 +99,8 @@ public final class NodesCache {
       return;
     }
 
-    for (int i = 0; i < fileRows.length; i++) {
-      OsmFile[] fileRow = fileRows[i];
+    for (int i = 0; i < mapFiles.length; i++) {
+      OsmFile[] fileRow = mapFiles[i];
       if (fileRow == null) {
         continue;
       }
@@ -131,7 +131,7 @@ public final class NodesCache {
       int lonDegree = ilon / 1000000;
       int latDegree = ilat / 1000000;
       OsmFile osmf = null;
-      OsmFile[] fileRow = fileRows[latDegree];
+      OsmFile[] fileRow = mapFiles[latDegree];
       int ndegrees = fileRow == null ? 0 : fileRow.length;
       for (int i = 0; i < ndegrees; i++) {
         if (fileRow[i].lonDegree == lonDegree) {
@@ -146,7 +146,7 @@ public final class NodesCache {
           newFileRow[i] = fileRow[i];
         }
         newFileRow[ndegrees] = osmf;
-        fileRows[latDegree] = newFileRow;
+        mapFiles[latDegree] = newFileRow;
       }
       currentFileName = osmf.filename;
 
@@ -238,8 +238,8 @@ public final class NodesCache {
     return existing;
   }
 
-  public void matchWaypointsToNodes(List<MatchedWaypoint> matchedWaypoints, double maxDistance, OsmNodePairSet islandNodePairs) {
-    waypointMatcher = new WaypointMatcherImpl(matchedWaypoints, maxDistance, islandNodePairs);
+  public void matchWaypointsToNodes(List<MatchedWaypoint> matchedWaypoints, OsmNodePairSet islandNodePairs) {
+    waypointMatcher = new WaypointMatcherImpl(matchedWaypoints, islandNodePairs);
     for (MatchedWaypoint mwp : matchedWaypoints) {
       preloadPosition(mwp.waypoint);
     }

@@ -29,12 +29,12 @@ public final class WaypointMatcherImpl implements WaypointMatcher {
   private int lonLast;
   private int latLast;
 
-  public WaypointMatcherImpl(List<MatchedWaypoint> waypoints, double maxDistance, OsmNodePairSet islandPairs) {
+  public WaypointMatcherImpl(List<MatchedWaypoint> waypoints, OsmNodePairSet islandPairs) {
     this.waypoints = waypoints;
     this.islandPairs = islandPairs;
     MatchedWaypoint last = null;
     for (MatchedWaypoint mwp : waypoints) {
-      mwp.radius = maxDistance;
+      mwp.radius = 250.0;
       if (last != null && mwp.directionToNext == -1) {
         last.directionToNext = CheapAngleMeter.getDirection(last.waypoint.longitude, last.waypoint.latitude, mwp.waypoint.longitude, mwp.waypoint.latitude);
       }

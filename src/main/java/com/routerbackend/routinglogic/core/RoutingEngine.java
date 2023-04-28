@@ -17,7 +17,7 @@ public class RoutingEngine {
   protected List<MatchedWaypoint> matchedWaypoints;
 
   private int nodeLimit; // used for target island search
-  private OsmNodePairSet islandNodePairs = new OsmNodePairSet(MAXNODES_ISLAND_CHECK);
+  private OsmNodePairSet islandNodePairs = new OsmNodePairSet();
   protected OsmTrack foundTrack = new OsmTrack();
 
   protected String errorMessage = null;
@@ -344,7 +344,7 @@ public class RoutingEngine {
   // geometric position matching finding the nearest routable way-section
   private void matchWaypointsToNodes(List<MatchedWaypoint> matchedWaypoints) {
     resetCache(false);
-    nodesCache.matchWaypointsToNodes(matchedWaypoints, routingContext.waypointCatchingRange, islandNodePairs);
+    nodesCache.matchWaypointsToNodes(matchedWaypoints, islandNodePairs);
   }
 
   private OsmTrack searchTrack(MatchedWaypoint startWp, MatchedWaypoint endWp, OsmTrack refTrack) {

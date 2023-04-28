@@ -37,7 +37,6 @@ public final class RoutingContext {
   public int elevationpenaltybuffer;
   public int elevationmaxbuffer;
   public int elevationbufferreduce;
-  public double waypointCatchingRange;
 
   public void readGlobalConfig() {
     BExpressionContext expressionContextGlobal = expressionContextWay;
@@ -50,8 +49,6 @@ public final class RoutingContext {
     carMode = 0.f != expressionContextGlobal.getVariableValue("validForCars", 0.f);
     bikeMode = 0.f != expressionContextGlobal.getVariableValue("validForBikes", 0.f);
     footMode = 0.f != expressionContextGlobal.getVariableValue("validForFoot", 0.f);
-
-    waypointCatchingRange = expressionContextGlobal.getVariableValue("waypointCatchingRange", 250.f);
 
     // turn-restrictions not used per default for foot profiles
     considerTurnRestrictions = 0.f != expressionContextGlobal.getVariableValue("considerTurnRestrictions", footMode ? 0.f : 1.f);

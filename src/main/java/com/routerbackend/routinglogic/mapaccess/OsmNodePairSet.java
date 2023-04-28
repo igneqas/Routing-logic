@@ -7,16 +7,17 @@ package com.routerbackend.routinglogic.mapaccess;
 
 import com.routerbackend.routinglogic.utils.CompactLongMap;
 
+import static com.routerbackend.Constants.MAXNODES_ISLAND_CHECK;
+
 public class OsmNodePairSet {
   private long[] n1a;
   private long[] n2a;
   private int tempNodes = 0;
-  private int maxTempNodes = 0;
+  private final int maxTempNodes = MAXNODES_ISLAND_CHECK;
   private int npairs = 0;
   private int freezecount = 0;
 
-  public OsmNodePairSet(int maxTempNodeCount) {
-    maxTempNodes = maxTempNodeCount;
+  public OsmNodePairSet() {
     n1a = new long[maxTempNodes];
     n2a = new long[maxTempNodes];
   }
