@@ -5,7 +5,6 @@ import com.routerbackend.routinglogic.core.OsmNode;
 import com.routerbackend.routinglogic.utils.CheapRuler;
 import com.routerbackend.routinglogic.utils.CheapAngleMeter;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -30,8 +29,6 @@ public final class WaypointMatcherImpl implements WaypointMatcher {
   private int lonLast;
   private int latLast;
 
-  private Comparator<MatchedWaypoint> comparator;
-
   public WaypointMatcherImpl(List<MatchedWaypoint> waypoints, double maxDistance, OsmNodePairSet islandPairs) {
     this.waypoints = waypoints;
     this.islandPairs = islandPairs;
@@ -50,17 +47,6 @@ public final class WaypointMatcherImpl implements WaypointMatcher {
     } else {
       last.directionToNext = CheapAngleMeter.getDirection(last.waypoint.longitude, last.waypoint.latitude, waypoints.get(lastidx).waypoint.longitude, waypoints.get(lastidx).waypoint.latitude);
     }
-
-    // sort result list
-    comparator = new Comparator<MatchedWaypoint>() {
-      @Override
-      public int compare(MatchedWaypoint mw1, MatchedWaypoint mw2) {
-        int cmpDist = Double.compare(mw1.radius, mw2.radius);
-        if (cmpDist != 0) return cmpDist;
-        return Double.compare(mw1.directionDiff, mw2.directionDiff);
-      }
-    };
-
   }
 
   private void checkSegment(int lon1, int lat1, int lon2, int lat2) {
@@ -77,24 +63,7 @@ public final class WaypointMatcherImpl implements WaypointMatcher {
     if (d == 0.)
       return;
 
-    //for ( MatchedWaypoint mwp : waypoints )
-    for (int i = 0; i < waypoints.size(); i++) {
-      MatchedWaypoint mwp = waypoints.get(i);
-
-      if (mwp.direct &&
-        (i == 0 ||
-          waypoints.get(i - 1).direct)
-      ) {
-        if (mwp.crosspoint == null) {
-          mwp.crosspoint = new OsmNode();
-          mwp.crosspoint.longitude = mwp.waypoint.longitude;
-          mwp.crosspoint.latitude = mwp.waypoint.latitude;
-          mwp.hasUpdate = true;
-          anyUpdate = true;
-        }
-        continue;
-      }
-
+    for (MatchedWaypoint mwp : waypoints) {
       OsmNode wp = mwp.waypoint;
       double x1 = (lon1 - wp.longitude) * dlon2m;
       double y1 = (lat1 - wp.latitude) * dlat2m;
@@ -228,7 +197,8 @@ public final class WaypointMatcherImpl implements WaypointMatcher {
   void updateWayList(List<MatchedWaypoint> ways, MatchedWaypoint mw) {
     ways.add(mw);
     // use only shortest distances by smallest direction difference
-    Collections.sort(ways, comparator);
+    Comparator<MatchedWaypoint> comparator = Comparator.comparingDouble((MatchedWaypoint matchedWaypoint) -> matchedWaypoint.radius).thenComparingDouble(matchedWaypoint -> matchedWaypoint.directionDiff);
+    ways.sort(comparator);
     if (ways.size() > MAX_POINTS) ways.remove(MAX_POINTS);
   }
 }

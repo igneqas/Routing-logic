@@ -222,8 +222,6 @@ public class CompactLongMap<V> {
     return false;
   }
 
-
-  // does sorted array "a" contain "id" ?
   private boolean contains(int idx, long id, boolean doPut) {
     long[] a = al[idx];
     int offset = a.length;

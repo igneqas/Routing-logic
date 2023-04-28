@@ -28,7 +28,7 @@ public class OsmNode extends OsmLink implements OsmPos
   /**
    * The elevation
    */
-  public short selev = Short.MIN_VALUE;
+  public short elevation = Short.MIN_VALUE;
 
   /**
    * The node-tags, if any
@@ -59,7 +59,7 @@ public class OsmNode extends OsmLink implements OsmPos
 
   public OsmNode(long id) {
     longitude = (int) (id >> 32);
-    latitude = (int) (id & 0xffffffff);
+    latitude = (int) (id);
   }
 
 
@@ -73,11 +73,11 @@ public class OsmNode extends OsmLink implements OsmPos
   }
 
   public final short getSElev() {
-    return selev;
+    return elevation;
   }
 
   public final double getElev() {
-    return selev / 4.;
+    return elevation / 4.;
   }
 
   public final void addLink(OsmLink link, boolean isReverse, OsmNode tn) {
@@ -102,7 +102,7 @@ public class OsmNode extends OsmLink implements OsmPos
     }
   }
 
-  public final int calcDistance(OsmPos p) {
+  public final int calculateDistance(OsmPos p) {
     return (int) Math.max(1.0, Math.round(CheapRuler.distance(longitude, latitude, p.getILon(), p.getILat())));
   }
 
@@ -132,7 +132,7 @@ public class OsmNode extends OsmLink implements OsmPos
       addTurnRestriction(tr);
     }
 
-    selev = mc.readShort();
+    elevation = mc.readShort();
     int nodeDescSize = mc.readVarLengthUnsigned();
     nodeDescription = nodeDescSize == 0 ? null : mc.readUnified(nodeDescSize, abUnifier);
 
@@ -196,11 +196,11 @@ public class OsmNode extends OsmLink implements OsmPos
 
 
   public final boolean isHollow() {
-    return selev == -12345;
+    return elevation == -12345;
   }
 
   public final void setHollow() {
-    selev = -12345;
+    elevation = -12345;
   }
 
   public final long getIdFromPos() {
@@ -233,7 +233,6 @@ public class OsmNode extends OsmLink implements OsmPos
     }
     OsmLink l = firstlink;
     while (l != null) {
-      // if ( l.isReverse( this ) )
       if (l.n1 != this && l.n1 != null) // isReverse inline
       {
         OsmLink nl = l.previous;

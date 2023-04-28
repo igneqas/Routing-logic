@@ -15,7 +15,7 @@ public interface OsmPos {
 
   double getElev();
 
-  int calcDistance(OsmPos p);
+  int calculateDistance(OsmPos p);
 
   long getIdFromPos();
 

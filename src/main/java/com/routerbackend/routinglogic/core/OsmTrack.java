@@ -5,10 +5,8 @@
  */
 package com.routerbackend.routinglogic.core;
 
-import com.routerbackend.routinglogic.mapaccess.MatchedWaypoint;
 import com.routerbackend.routinglogic.utils.CompactLongMap;
 import com.routerbackend.routinglogic.utils.FrozenLongMap;
-import com.routerbackend.routinglogic.utils.StringUtils;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -20,23 +18,9 @@ public final class OsmTrack {
     public int plainAscend;
     public int cost;
     public int energy;
-  final public static String version = "1.6.3";
 
   // csv-header-line
   private static final String MESSAGES_HEADER = "Longitude\tLatitude\tElevation\tDistance\tCostPerKm\tElevCost\tTurnCost\tNodeCost\tInitialCost\tWayTags\tNodeTags\tTime\tEnergy";
-
-  public MatchedWaypoint endPoint;
-  public long[] nogoChecksums;
-  public long profileTimestamp;
-  public boolean isDirty;
-
-  public boolean showspeed;
-  public boolean showSpeedProfile;
-  public boolean showTime;
-
-  public Map<String, String> params;
-
-  public List<OsmNodeNamed> pois = new ArrayList<OsmNodeNamed>();
 
   public static class OsmPathElementHolder {
     public OsmPathElement node;
@@ -50,9 +34,6 @@ public final class OsmTrack {
   private CompactLongMap<OsmPathElementHolder> detourMap;
 
   public String name = "unset";
-
-  protected List<MatchedWaypoint> matchedWaypoints;
-  public boolean exportWaypoints = false;
 
   public void addNode(OsmPathElement node) {
     nodes.add(0, node);
@@ -76,26 +57,21 @@ public final class OsmTrack {
   }
 
   public void copyDetours(OsmTrack source) {
-    detourMap = source.detourMap == null ? null : new FrozenLongMap<OsmPathElementHolder>(source.detourMap);
+    detourMap = source.detourMap == null ? null : new FrozenLongMap<>(source.detourMap);
   }
 
   public void addDetours(OsmTrack source) {
     if (detourMap != null) {
-      CompactLongMap<OsmPathElementHolder> tmpDetourMap = new CompactLongMap<OsmPathElementHolder>();
-
-      List oldlist = ((FrozenLongMap) detourMap).getValueList();
-      long[] oldidlist = ((FrozenLongMap) detourMap).getKeyArray();
-      for (int i = 0; i < oldidlist.length; i++) {
-        long id = oldidlist[i];
+      CompactLongMap<OsmPathElementHolder> tmpDetourMap = new CompactLongMap<>();
+      long[] oldIdList = ((FrozenLongMap<?>) detourMap).getKeyArray();
+      for (long id : oldIdList) {
         OsmPathElementHolder v = detourMap.get(id);
-
         tmpDetourMap.put(id, v);
       }
 
       if (source.detourMap != null) {
-        long[] idlist = ((FrozenLongMap) source.detourMap).getKeyArray();
-        for (int i = 0; i < idlist.length; i++) {
-          long id = idlist[i];
+        long[] idList = ((FrozenLongMap<?>) source.detourMap).getKeyArray();
+        for (long id : idList) {
           OsmPathElementHolder v = source.detourMap.get(id);
           if (!tmpDetourMap.contains(id) && source.nodesMap.contains(id)) {
             tmpDetourMap.put(id, v);
@@ -147,27 +123,6 @@ public final class OsmTrack {
     return res;
   }
 
-  private List<String> aggregateSpeedProfile() {
-    ArrayList<String> res = new ArrayList<>();
-    int vmax = -1;
-    int vmaxe = -1;
-    int vmin = -1;
-    int extraTime = 0;
-    for (int i = nodes.size() - 1; i > 0; i--) {
-      OsmPathElement n = nodes.get(i);
-      MessageData m = n.message;
-      int vnode = getVNode(i);
-      if (m != null && (vmax != m.vmax || vmin != m.vmin || vmaxe != m.vmaxExplicit || vnode < m.vmax || extraTime != m.extraTime)) {
-        vmax = m.vmax;
-        vmin = m.vmin;
-        vmaxe = m.vmaxExplicit;
-        extraTime = m.extraTime;
-        res.add(i + "," + vmaxe + "," + vmax + "," + vmin + "," + vnode + "," + extraTime);
-      }
-    }
-    return res;
-  }
-
   public void addNodes(OsmTrack t) {
     for (OsmPathElement n : t.nodes)
       addNode(n);
@@ -195,8 +150,7 @@ public final class OsmTrack {
 
     int ourSize = nodes.size();
     if (ourSize > 0 && t.nodes.size() > 1) {
-      OsmPathElement olde = nodes.get(ourSize - 1);
-      t.nodes.get(1).origin = olde;
+      t.nodes.get(1).origin = nodes.get(ourSize - 1);
     }
     float t0 = ourSize > 0 ? nodes.get(ourSize - 1).getTime() : 0;
     float e0 = ourSize > 0 ? nodes.get(ourSize - 1).getEnergy() : 0;
@@ -209,23 +163,18 @@ public final class OsmTrack {
       }
     }
 
-      if (detourMap == null) {
-        detourMap = t.detourMap;
-      } else {
-        addDetours(t);
-      }
+    if (detourMap == null) {
+      detourMap = t.detourMap;
+    } else {
+      addDetours(t);
+    }
 
     distance += t.distance;
     ascend += t.ascend;
     plainAscend += t.plainAscend;
     cost += t.cost;
     energy = (int) nodes.get(nodes.size() - 1).getEnergy();
-
-    showspeed |= t.showspeed;
-    showSpeedProfile |= t.showSpeedProfile;
   }
-
-  public List<String> iternity;
 
   public String formatAsGeoJson() {
     StringBuilder sb = new StringBuilder(8192);
@@ -236,7 +185,6 @@ public final class OsmTrack {
     sb.append("    {\n");
     sb.append("      \"type\": \"Feature\",\n");
     sb.append("      \"properties\": {\n");
-//    sb.append("        \"creator\": \"BRouter-" + version + "\",\n");
     sb.append("        \"name\": \"").append(name).append("\",\n");
     sb.append("        \"trackLength\": \"").append(distance).append("\",\n");
     sb.append("        \"filteredAscend\": \"").append(ascend).append("\",\n");
@@ -245,17 +193,6 @@ public final class OsmTrack {
     sb.append("        \"total-energy\": \"").append(energy).append("\",\n");
     sb.append("        \"cost\": \"").append(cost).append("\",\n");
 
-    if (showSpeedProfile) // set in profile
-    {
-      List<String> sp = aggregateSpeedProfile();
-      if (sp.size() > 0) {
-        sb.append("        \"speedprofile\": [\n");
-        for (int i = sp.size() - 1; i >= 0; i--) {
-          sb.append("          [").append(sp.get(i)).append(i > 0 ? "],\n" : "]\n");
-        }
-        sb.append("        ],\n");
-      }
-    }
     //  ... traditional message list
     {
       sb.append("        \"messages\": [\n");
@@ -281,103 +218,24 @@ public final class OsmTrack {
     }
 
     sb.append("      },\n");
-
-    if (iternity != null) {
-      sb.append("      \"iternity\": [\n");
-      for (String s : iternity) {
-        sb.append("        \"").append(s).append("\",\n");
-      }
-      sb.deleteCharAt(sb.lastIndexOf(","));
-      sb.append("        ],\n");
-    }
     sb.append("      \"geometry\": {\n");
     sb.append("        \"type\": \"LineString\",\n");
     sb.append("        \"coordinates\": [\n");
 
-    OsmPathElement nn = null;
     for (OsmPathElement n : nodes) {
       String sele = n.getSElev() == Short.MIN_VALUE ? "" : ", " + n.getElev();
-      if (showspeed) // hack: show speed instead of elevation
-      {
-        double speed = 0;
-        if (nn != null) {
-          int dist = n.calcDistance(nn);
-          float dt = n.getTime() - nn.getTime();
-          if (dt != 0.f) {
-            speed = ((3.6f * dist) / dt + 0.5);
-          }
-        }
-        sele = ", " + (((int) (speed * 10)) / 10.f);
-      }
       sb.append("          [").append(formatILon(n.getILon())).append(", ").append(formatILat(n.getILat()))
         .append(sele).append("],\n");
-      nn = n;
     }
-    sb.deleteCharAt(sb.lastIndexOf(","));
 
+    sb.deleteCharAt(sb.lastIndexOf(","));
     sb.append("        ]\n");
     sb.append("      }\n");
-    if (exportWaypoints || !pois.isEmpty()) {
-      sb.append("    },\n");
-      for (int i = 0; i <= pois.size() - 1; i++) {
-        OsmNodeNamed poi = pois.get(i);
-        addFeature(sb, "poi", poi.name, poi.latitude, poi.longitude);
-        if (i < matchedWaypoints.size() - 1) {
-          sb.append(",");
-        }
-        sb.append("    \n");
-      }
-      if (exportWaypoints) {
-        for (int i = 0; i <= matchedWaypoints.size() - 1; i++) {
-          String type;
-          if (i == 0) {
-            type = "from";
-          } else if (i == matchedWaypoints.size() - 1) {
-            type = "to";
-          } else {
-            type = "via";
-          }
-
-          MatchedWaypoint wp = matchedWaypoints.get(i);
-          addFeature(sb, type, wp.name, wp.waypoint.latitude, wp.waypoint.longitude);
-          if (i < matchedWaypoints.size() - 1) {
-            sb.append(",");
-          }
-          sb.append("    \n");
-        }
-      }
-    } else {
-      sb.append("    }\n");
-    }
+    sb.append("    }\n");
     sb.append("  ]\n");
     sb.append("}\n");
 
     return sb.toString();
-  }
-
-  private void addFeature(StringBuilder sb, String type, String name, int ilat, int ilon) {
-    sb.append("    {\n");
-    sb.append("      \"type\": \"Feature\",\n");
-    sb.append("      \"properties\": {\n");
-    sb.append("        \"name\": \"" + StringUtils.escapeJson(name) + "\",\n");
-    sb.append("        \"type\": \"" + type + "\"\n");
-    sb.append("      },\n");
-    sb.append("      \"geometry\": {\n");
-    sb.append("        \"type\": \"Point\",\n");
-    sb.append("        \"coordinates\": [\n");
-    sb.append("          " + formatILon(ilon) + ",\n");
-    sb.append("          " + formatILat(ilat) + "\n");
-    sb.append("        ]\n");
-    sb.append("      }\n");
-    sb.append("    }");
-  }
-
-  private int getVNode(int i) {
-    MessageData m1 = i + 1 < nodes.size() ? nodes.get(i + 1).message : null;
-    MessageData m0 = i < nodes.size() ? nodes.get(i).message : null;
-    int vnode0 = m1 == null ? 999 : m1.vnode0;
-    int vnode1 = m0 == null ? 999 : m0.vnode1;
-    return vnode0 < vnode1 ? vnode0 : vnode1;
   }
 
   private int getTotalSeconds() {
@@ -408,11 +266,5 @@ public final class OsmTrack {
     if (negative)
       ac[i--] = '-';
     return new String(ac, i + 1, 11 - i);
-  }
-
-  public OsmPathElementHolder getFromDetourMap(long id) {
-    if (detourMap == null)
-      return null;
-    return detourMap.get(id);
   }
 }

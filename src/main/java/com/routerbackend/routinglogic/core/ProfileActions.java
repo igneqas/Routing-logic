@@ -11,16 +11,17 @@ import com.routerbackend.routinglogic.expressions.BExpressionMetaData;
 
 import java.io.File;
 
+import static com.routerbackend.Constants.MEMORY_CLASS;
+
 public final class ProfileActions {
 
   public static void parseProfile(RoutingContext routingContext) {
     String profileBaseDir = "src/main/java/com/data/profiles";
     File profileDir = new File(profileBaseDir);
     File profileFile = new File(profileDir, routingContext.getProfileName() + ".brf");
-    routingContext.profileTimestamp = profileFile.lastModified() + routingContext.getKeyValueChecksum() << 24;
 
     BExpressionMetaData meta = new BExpressionMetaData();
-    routingContext.expressionContextWay = new BExpressionContextWay(routingContext.memoryClass * 512, meta);
+    routingContext.expressionContextWay = new BExpressionContextWay(MEMORY_CLASS * 512, meta);
     routingContext.expressionContextNode = new BExpressionContextNode(0, meta);
     routingContext.expressionContextNode.setForeignContext(routingContext.expressionContextWay);
 
@@ -30,10 +31,6 @@ public final class ProfileActions {
     routingContext.expressionContextNode.parseFile(profileFile, "global");
 
     routingContext.readGlobalConfig();
-
-    if (routingContext.processUnusedTags) {
-      routingContext.expressionContextWay.setAllTagsUsed();
-    }
   }
 
 }

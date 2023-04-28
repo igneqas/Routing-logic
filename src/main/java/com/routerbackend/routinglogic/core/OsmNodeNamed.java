@@ -9,10 +9,9 @@ import com.routerbackend.routinglogic.utils.CheapRuler;
 
 public class OsmNodeNamed extends OsmNode {
   public String name;
-  public double radius; // radius of nogopoint (in meters)
-  public double noGoWeight;  // weight for nogopoint
+  public double radius;
+  public double noGoWeight;
   public boolean isNoGo = false;
-  public boolean direct = false; // mark direct routing
 
   public OsmNodeNamed() {
   }
@@ -53,8 +52,7 @@ public class OsmNodeNamed extends OsmNode {
       lat2 = lat1;
       lat1 = tmp;
       // Fix boolean values
-      isLastPointWithinCircle = isFirstPointWithinCircle;
-      isFirstPointWithinCircle = false;
+      isLastPointWithinCircle = true;
     }
     // Distance between the initial point and projection of center of
     // the circle on the current segment.

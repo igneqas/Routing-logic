@@ -70,7 +70,7 @@ public class OsmPathElement implements OsmPos {
     return ((long) ilon) << 32 | ilat;
   }
 
-  public final int calcDistance(OsmPos p) {
+  public final int calculateDistance(OsmPos p) {
     return (int) Math.max(1.0, Math.round(CheapRuler.distance(ilon, ilat, p.getILon(), p.getILat())));
   }
 

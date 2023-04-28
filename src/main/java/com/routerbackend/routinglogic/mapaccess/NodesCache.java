@@ -18,13 +18,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.routerbackend.Constants.MEMORY_CLASS;
+
 public final class NodesCache {
-  private File segmentDir;
+  private File segmentDir = new File("src/main/java/com/data/segments");
 
   public OsmNodesMap nodesMap;
   private BExpressionContextWay expCtxWay;
   private int lookupVersion;
-  private boolean forceSecondaryData;
   private String currentFileName;
 
   private Map<String, PhysicalFile> fileCache;
@@ -34,30 +35,23 @@ public final class NodesCache {
 
   public WaypointMatcher waypointMatcher;
 
-  public boolean first_file_access_failed = false;
+  public boolean first_file_access_failed;
   public String first_file_access_name;
 
   private long cacheSum = 0;
-  private long maxmemtiles;
+  private long maxmemtiles = (MEMORY_CLASS * 1024L * 1024L) / 8;
   private boolean detailed; // NOPMD used in constructor
 
   private boolean garbageCollectionEnabled = false;
   private boolean ghostCleaningDone = false;
 
-  public NodesCache(File segmentDir, BExpressionContextWay ctxWay, boolean forceSecondaryData, long maxmem, NodesCache oldCache, boolean detailed) {
-    this.maxmemtiles = maxmem / 8;
-    this.segmentDir = segmentDir;
+  public NodesCache(BExpressionContextWay ctxWay, NodesCache oldCache, boolean detailed) {
     this.nodesMap = new OsmNodesMap();
-    this.nodesMap.maxmem = (2L * maxmem) / 3L;
     this.expCtxWay = ctxWay;
     this.lookupVersion = ctxWay.meta.lookupVersion;
-    this.forceSecondaryData = forceSecondaryData;
     this.detailed = detailed;
 
-    if (ctxWay != null) {
-      ctxWay.setDecodeForbidden(detailed);
-    }
-
+    ctxWay.setDecodeForbidden(detailed);
     first_file_access_failed = false;
     first_file_access_name = null;
 
@@ -253,20 +247,10 @@ public final class NodesCache {
     if (first_file_access_failed) {
       throw new IllegalArgumentException("datafile " + first_file_access_name + " not found");
     }
-    int len = matchedWaypoints.size();
-    for (int i = 0; i < len; i++) {
-      MatchedWaypoint mwp = matchedWaypoints.get(i);
+
+    for (MatchedWaypoint mwp : matchedWaypoints) {
       if (mwp.crosspoint == null) {
-        if (matchedWaypoints.size() > 1 && i == matchedWaypoints.size() - 1 && matchedWaypoints.get(i - 1).direct) {
-          mwp.crosspoint = new OsmNode(mwp.waypoint.longitude, mwp.waypoint.latitude);
-          mwp.direct = true;
-        } else {
-          throw new IllegalArgumentException(mwp.name + "-position not mapped in existing datafile");
-        }
-      }
-      if (matchedWaypoints.size() > 1 && i == matchedWaypoints.size() - 1 && matchedWaypoints.get(i - 1).direct) {
-        mwp.crosspoint = new OsmNode(mwp.waypoint.longitude, mwp.waypoint.latitude);
-        mwp.direct = true;
+        throw new IllegalArgumentException(mwp.name + "-position not mapped in existing datafile");
       }
     }
   }
@@ -276,9 +260,6 @@ public final class NodesCache {
     first_file_access_failed = false;
     first_file_access_name = null;
     loadSegmentFor(n.longitude, n.latitude);
-    if (first_file_access_failed) {
-      throw new IllegalArgumentException("datafile " + first_file_access_name + " not found");
-    }
     for (int idxLat = -1; idxLat <= 1; idxLat++)
       for (int idxLon = -1; idxLon <= 1; idxLon++) {
         if (idxLon != 0 || idxLat != 0) {
@@ -303,12 +284,10 @@ public final class NodesCache {
     PhysicalFile ra = null;
     if (!fileCache.containsKey(filenameBase)) {
       File f = null;
-      if (!forceSecondaryData) {
         File primary = new File(segmentDir, filenameBase + ".rd5");
         if (primary.exists()) {
           f = primary;
         }
-      }
       if (f != null) {
         currentFileName = f.getName();
         ra = new PhysicalFile(f, dataBuffers, lookupVersion);

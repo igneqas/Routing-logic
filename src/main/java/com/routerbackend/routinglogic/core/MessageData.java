@@ -27,14 +27,6 @@ final class MessageData implements Cloneable {
   float time;
   float energy;
 
-  // speed profile
-  int vmaxExplicit = -1;
-  int vmax = -1;
-  int vmin = -1;
-  int vnode0 = 999;
-  int vnode1 = 999;
-  int extraTime = 0;
-
   String toMessage() {
     if (wayKeyValues == null) {
       return null;
@@ -76,25 +68,4 @@ final class MessageData implements Cloneable {
   public String toString() {
     return "dist=" + linkdist + " prio=" + priorityclassifier + " turn=" + turnangle;
   }
-
-  public int getPrio() {
-    return priorityclassifier;
-  }
-
-  public boolean isBadOneway() {
-    return (classifiermask & 1) != 0;
-  }
-
-  public boolean isRoundabout() {
-    return (classifiermask & 4) != 0;
-  }
-
-  public boolean isLinktType() {
-    return (classifiermask & 8) != 0;
-  }
-
-  public boolean isGoodForCars() {
-    return (classifiermask & 16) != 0;
-  }
-
 }

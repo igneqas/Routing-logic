@@ -84,7 +84,7 @@ public final class DirectWeaver extends ByteDataWriter {
       }
 
       selev += nodeEleDiff.decodeSignedValue();
-      node.selev = (short) selev;
+      node.elevation = (short) selev;
       TagValueWrapper nodeTags = nodeTagCoder.decodeTagValueSet();
       node.nodeDescription = nodeTags == null ? null : nodeTags.data; // TODO: unified?
 

@@ -7,6 +7,8 @@ package com.routerbackend.routinglogic.core;
 
 import com.routerbackend.routinglogic.utils.FastMath;
 
+import static com.routerbackend.Constants.*;
+
 final class StdPath extends OsmPath {
   /**
    * The elevation-hysteresis-buffer (0-10 m)
@@ -17,9 +19,6 @@ final class StdPath extends OsmPath {
   private float totalTime;  // travel time (seconds)
   private float totalEnergy; // total route energy (Joule)
   private float elevation_buffer; // just another elevation buffer (for travel time)
-
-  // Gravitational constant, g
-  private static final double GRAVITY = 9.81;  // in meters per second^(-2)
 
   @Override
   public void init(OsmPath orig) {
@@ -139,15 +138,15 @@ final class StdPath extends OsmPath {
     if (targetNode.nodeDescription != null) {
       boolean nodeAccessGranted = rc.expressionContextWay.getNodeAccessGranted() != 0.;
       rc.expressionContextNode.evaluate(nodeAccessGranted, targetNode.nodeDescription);
-      float initialcost = rc.expressionContextNode.getInitialcost();
-      if (initialcost >= 1000000.) {
+      float initialCost = rc.expressionContextNode.getInitialcost();
+      if (initialCost >= 1000000.) {
         return -1.;
       }
       if (message != null) {
-        message.linknodecost += (int) initialcost;
+        message.linknodecost += (int) initialCost;
         message.nodeKeyValues = rc.expressionContextNode.getKeyValueDescription(nodeAccessGranted, targetNode.nodeDescription);
       }
-      return initialcost;
+      return initialCost;
     }
     return 0.;
   }
@@ -207,12 +206,12 @@ final class StdPath extends OsmPath {
     }
 
     double speed = maxSpeed; // Travel speed
-    double f_roll = rc.totalMass * GRAVITY * (rc.defaultC_r + incline);
+    double f_roll = rc.totalMass * GRAVITY * (ROAD_RESISTANCE + incline);
     if (rc.footMode) {
       // Use Tobler's hiking function for walking sections
       speed = rc.maxSpeed * FastMath.exp(-3.5 * Math.abs(incline + 0.05));
     } else if (rc.bikeMode) {
-      speed = solveCubic(rc.S_C_x, f_roll, rc.bikerPower);
+      speed = solveCubic(rc.S_C_x, f_roll, BIKER_POWER);
       speed = Math.min(speed, maxSpeed);
     }
     float dt = (float) (dist / speed);

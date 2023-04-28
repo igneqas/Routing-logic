@@ -17,11 +17,17 @@ public final class MatchedWaypoint {
   public OsmNode waypoint;
   public String name;  // waypoint name used in error messages
   public double radius;  // distance in meter between waypoint and crosspoint
-  public boolean direct;  // from this point go direct to next = beeline routing
-  public int indexInTrack = 0;
   public double directionToNext = -1;
   public double directionDiff = 361;
 
   public List<MatchedWaypoint> wayNearest = new ArrayList<>();
   public boolean hasUpdate;
+
+  public MatchedWaypoint(OsmNode waypoint, String name) {
+    this.waypoint = waypoint;
+    this.name = name;
+  }
+
+  public MatchedWaypoint() {
+  }
 }

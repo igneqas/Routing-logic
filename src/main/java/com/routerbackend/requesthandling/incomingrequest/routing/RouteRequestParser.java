@@ -61,9 +61,6 @@ public class RouteRequestParser implements IRouteRequestParser {
       if (lonLat.length < 2)
         throw new IllegalArgumentException("Longitude and latitude are required.");
       waypointList.add(readPosition(lonLat[0], lonLat[1], "via" + i));
-      if (lonLat.length > 2 && lonLat[2].equals("d")) {
-          waypointList.get(waypointList.size()-1).direct = true;
-      }
     }
 
     waypointList.get(0).name = "from";

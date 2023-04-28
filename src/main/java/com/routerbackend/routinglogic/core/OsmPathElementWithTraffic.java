@@ -51,7 +51,6 @@ public final class OsmPathElementWithTraffic extends OsmPathElement {
         int t2 = cost == ot.cost ? -1 : (int) (rc.farTrafficWeight * farTraffic + rc.nearTrafficWeight * nearTraffic);
 
         if (t2 > 4000 || t2 == -1) {
-          // System.out.println( "unregistered: " + this + " origin=" + ot + " farTraffic =" + farTraffic + " nearTraffic =" + nearTraffic + " cost=" + cost );
           if (rc.trafficOutputStream != null) {
             rc.trafficOutputStream.writeLong(getIdFromPos());
             rc.trafficOutputStream.writeLong(ot.getIdFromPos());

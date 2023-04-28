@@ -48,9 +48,9 @@ public class RouteController {
         if(lonlats == null || lonlats.isEmpty())
             return new ResponseEntity<>("Provide coordinates.", HttpStatus.BAD_REQUEST);
 
-        IRouteRequestParser requestHandler = new RouteRequestParser();
-        RoutingContext routingContext = requestHandler.readRoutingContext(profile, alternativeIdx);
-        List<OsmNodeNamed> waypointList = requestHandler.readWaypointList(lonlats);
+        IRouteRequestParser routeRequestParser = new RouteRequestParser();
+        RoutingContext routingContext = routeRequestParser.readRoutingContext(profile, alternativeIdx);
+        List<OsmNodeNamed> waypointList = routeRequestParser.readWaypointList(lonlats);
         RoutingEngine routingEngine = new RoutingEngine(waypointList, routingContext);
         routingEngine.doRun();
         if (routingEngine.getErrorMessage() != null) {

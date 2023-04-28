@@ -38,7 +38,7 @@ public final class GeometryDecoder {
     r.reset(geometry);
     int olon = startnode.longitude;
     int olat = startnode.latitude;
-    int oselev = startnode.selev;
+    int oselev = startnode.elevation;
     int idx = 0;
     while (r.hasMoreData()) {
       OsmTransferNode trans = idx < nCachedNodes ? cachedNodes[idx++] : new OsmTransferNode();

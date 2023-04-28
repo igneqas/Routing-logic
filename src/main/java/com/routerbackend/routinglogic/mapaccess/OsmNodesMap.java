@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.routerbackend.Constants.MEMORY_CLASS;
+
 public final class OsmNodesMap {
   private Map<OsmNode, OsmNode> hmap = new HashMap<OsmNode, OsmNode>(4096);
 
@@ -22,7 +24,7 @@ public final class OsmNodesMap {
   private OsmNode testKey = new OsmNode();
 
   public int nodesCreated;
-  public long maxmem;
+  public long maxMemory = (2L * (MEMORY_CLASS * 1024L * 1024L)) / 3L;
   private long currentmaxmem = 4000000; // start with 4 MB
   public int lastVisitID = 1000;
   public int baseID = 1000;
@@ -45,8 +47,7 @@ public final class OsmNodesMap {
   }
 
   private void justCount(OsmNode[] nodes) {
-    for (int i = 0; i < nodes.length; i++) {
-      OsmNode n = nodes[i];
+    for (OsmNode n : nodes) {
       if (n.firstlink != null) {
         nodesCreated++;
       }
@@ -55,16 +56,12 @@ public final class OsmNodesMap {
 
   private void cleanupPeninsulas(OsmNode[] nodes) {
     baseID = lastVisitID++;
-    for (int i = 0; i < nodes.length; i++) // loop over nodes again just for housekeeping
-    {
-      OsmNode n = nodes[i];
-      if (n.firstlink != null) {
-        if (n.visitID == 1) {
-          try {
-            minVisitIdInSubtree(null, n);
-          } catch (StackOverflowError soe) {
-            // System.out.println( "+++++++++++++++ StackOverflowError ++++++++++++++++" );
-          }
+    // loop over nodes again just for housekeeping
+    for (OsmNode n : nodes) {
+      if (n.firstlink != null && n.visitID == 1) {
+        try {
+          minVisitIdInSubtree(null, n);
+        } catch (StackOverflowError ignored) {
         }
       }
     }
@@ -76,7 +73,7 @@ public final class OsmNodesMap {
     int minId = n.visitID;
     nodesCreated++;
 
-    OsmLink nextLink = null;
+    OsmLink nextLink;
     for (OsmLink l = n.firstlink; l != null; l = nextLink) {
       nextLink = l.getNext(n);
 
@@ -117,8 +114,8 @@ public final class OsmNodesMap {
       long delta = total + 1900000 - currentmaxmem;
       if (delta > 0) {
         currentmaxmem += delta;
-        if (currentmaxmem > maxmem) {
-          currentmaxmem = maxmem;
+        if (currentmaxmem > maxMemory) {
+          currentmaxmem = maxMemory;
         }
       }
     }
@@ -155,7 +152,6 @@ public final class OsmNodesMap {
     while (!nodes2check.isEmpty()) {
       OsmNode n = nodes2check.remove(nodes2check.size() - 1);
       if (n.visitID == lastVisitID) {
-        n.visitID = lastVisitID;
         nodesCreated--;
         for (OsmLink l = n.firstlink; l != null; l = l.getNext(n)) {
           OsmNode t = l.getTarget(n);
@@ -179,7 +175,7 @@ public final class OsmNodesMap {
   }
 
   public void collectOutreachers() {
-    nodes2check = new ArrayList<OsmNode>(nodesCreated);
+    nodes2check = new ArrayList<>(nodesCreated);
     nodesCreated = 0;
     for (OsmNode n : hmap.values()) {
       addActiveNode(nodes2check, n);
@@ -199,7 +195,7 @@ public final class OsmNodesMap {
         }
       }
       if (destination != null && currentMaxCost < 1000000000) {
-        int distance = n.calcDistance(destination);
+        int distance = n.calculateDistance(destination);
         if (distance > currentMaxCost - currentPathCost + 100) {
           n.vanish();
         }
@@ -248,7 +244,7 @@ public final class OsmNodesMap {
   private static void addLinks(OsmNode[] nodes, int idx, boolean isBorder, int[] links) {
     OsmNode n = nodes[idx];
     n.visitID = isBorder ? 1 : 0;
-    n.selev = (short) idx;
+    n.elevation = (short) idx;
     for (int i : links) {
       OsmNode t = nodes[i];
       OsmLink link = n.isLinkUnused() ? n : (t.isLinkUnused() ? t : null);
@@ -280,16 +276,9 @@ public final class OsmNodesMap {
     addLinks(nodes, 11, false, new int[]{});  // 11
 
     OsmNodesMap nm = new OsmNodesMap();
-
     nm.cleanupMode = 2;
-
     nm.cleanupAndCount(nodes);
-
-    System.out.println("nodesCreated=" + nm.nodesCreated);
     nm.cleanupAndCount(nodes);
-
-    System.out.println("nodesCreated=" + nm.nodesCreated);
-
   }
 
 }
