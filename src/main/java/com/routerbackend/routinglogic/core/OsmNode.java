@@ -90,16 +90,15 @@ public class OsmNode extends OsmLink implements OsmPos
       link.n2 = this;
       link.next = tn.firstlink;
       link.previous = firstlink;
-      tn.firstlink = link;
-      firstlink = link;
     } else {
       link.n1 = this;
       link.n2 = tn;
       link.next = firstlink;
       link.previous = tn.firstlink;
-      tn.firstlink = link;
-      firstlink = link;
     }
+
+    tn.firstlink = link;
+    firstlink = link;
   }
 
   public final int calculateDistance(OsmPos p) {
