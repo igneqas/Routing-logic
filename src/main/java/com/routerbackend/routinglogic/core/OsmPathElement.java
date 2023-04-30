@@ -95,9 +95,6 @@ public class OsmPathElement implements OsmPos {
   protected OsmPathElement() {
   }
 
-  public void addTraffic(float traffic) {
-  }
-
   public String toString() {
     return ilon + "_" + ilat;
   }

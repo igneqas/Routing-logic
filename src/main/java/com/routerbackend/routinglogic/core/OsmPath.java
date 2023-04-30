@@ -9,12 +9,7 @@ import com.routerbackend.routinglogic.mapaccess.OsmTransferNode;
 import com.routerbackend.routinglogic.mapaccess.TurnRestriction;
 import com.routerbackend.routinglogic.utils.CheapRuler;
 
-import java.io.IOException;
-
 abstract class OsmPath implements OsmLinkHolder {
-  /**
-   * The cost of that path (a modified distance)
-   */
   public int cost = 0;
 
   // the elevation assumed for that path can have a value
@@ -29,11 +24,7 @@ abstract class OsmPath implements OsmLinkHolder {
   protected OsmLink link;
   public OsmPathElement originElement;
   public OsmPathElement myElement;
-
-  protected float traffic;
-
   private OsmLinkHolder nextForLink = null;
-
   public int treedepth = 0;
 
   // the position of the waypoint just before
@@ -92,7 +83,7 @@ abstract class OsmPath implements OsmLinkHolder {
     this.bitfield = origin.bitfield;
     this.priorityclassifier = origin.priorityclassifier;
     init(origin);
-    addAddionalPenalty(refTrack, detailMode, origin, link, rc);
+    addAdditionalPenalty(refTrack, detailMode, origin, link, rc);
   }
 
   protected abstract void init(OsmPath orig);
@@ -101,28 +92,25 @@ abstract class OsmPath implements OsmLinkHolder {
 
   static int seg = 1;
 
-  protected void addAddionalPenalty(OsmTrack refTrack, boolean detailMode, OsmPath origin, OsmLink link, RoutingContext rc) {
+  protected void addAdditionalPenalty(OsmTrack refTrack, boolean detailMode, OsmPath origin, OsmLink link, RoutingContext rc) {
     byte[] description = link.descriptionBitmap;
     if (description == null) { // could be a beeline path
       message = new MessageData();
-      if (message != null) {
-        message.turnangle = 0;
-        message.time = (float) 1;
-        message.energy = (float) 0;
-        message.priorityclassifier = 0;
-        message.classifiermask = 0;
-        message.lon = targetNode.getILon();
-        message.lat = targetNode.getILat();
-        message.ele = Short.MIN_VALUE;
-        message.linkdist = sourceNode.calculateDistance(targetNode);
-        message.wayKeyValues = "direct_segment=" + seg;
-      }
+      message.turnangle = 0;
+      message.time = (float) 1;
+      message.energy = (float) 0;
+      message.priorityclassifier = 0;
+      message.classifiermask = 0;
+      message.lon = targetNode.getILon();
+      message.lat = targetNode.getILat();
+      message.ele = Short.MIN_VALUE;
+      message.linkdist = sourceNode.calculateDistance(targetNode);
+      message.wayKeyValues = "direct_segment=" + seg;
       seg++;
       return;
     }
 
     boolean recordTransferNodes = detailMode;
-
     rc.nogoCost = 0.;
 
     // extract the 3 positions of the first section
@@ -132,16 +120,12 @@ abstract class OsmPath implements OsmLinkHolder {
     int lon1 = sourceNode.getILon();
     int lat1 = sourceNode.getILat();
     short ele1 = origin.selev;
-
     int linkdisttotal = 0;
-
     message = detailMode ? new MessageData() : null;
-
     boolean isReverse = link.isReverse(sourceNode);
 
     // evaluate the way tags
     rc.expressionContextWay.evaluate(rc.inverseDirection ^ isReverse, description);
-
 
     // calculate the costfactor inputs
     float costfactor = rc.expressionContextWay.getCostfactor();
@@ -356,8 +340,6 @@ abstract class OsmPath implements OsmLinkHolder {
       if (recordTransferNodes) {
         originElement = OsmPathElement.create(lon2, lat2, originEle2, originElement);
         originElement.cost = cost;
-        originElement.addTraffic(traffic);
-        traffic = 0;
       }
       lon0 = lon1;
       lat0 = lat1;
