@@ -129,7 +129,6 @@ abstract class OsmPath implements OsmLinkHolder {
 
     // calculate the costfactor inputs
     float costfactor = rc.expressionContextWay.getCostfactor();
-    boolean isTrafficBackbone = cost == 0 && rc.expressionContextWay.getIsTrafficBackbone() > 0.f;
     int lastpriorityclassifier = priorityclassifier;
     priorityclassifier = (int) rc.expressionContextWay.getPriorityClassifier();
 
@@ -287,10 +286,6 @@ abstract class OsmPath implements OsmLinkHolder {
       if ((sectionCost < 0. || costfactor > 9998. && !detailMode) || sectionCost + cost >= 2000000000.) {
         cost = -1;
         return;
-      }
-
-      if (isTrafficBackbone) {
-        sectionCost = 0.;
       }
 
       cost += (int) sectionCost;
