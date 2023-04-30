@@ -50,8 +50,6 @@ public final class WaypointMatcherImpl implements WaypointMatcher {
   }
 
   private void checkSegment(int lon1, int lat1, int lon2, int lat2) {
-    // todo: bounding-box pre-filter
-
     double[] lonlat2m = CheapRuler.getLonLatToMeterScales((lat1 + lat2) >> 1);
     double dlon2m = lonlat2m[0];
     double dlat2m = lonlat2m[1];

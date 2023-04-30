@@ -6,18 +6,15 @@ final class BExpression {
   private static final int OR_EXP = 10;
   private static final int AND_EXP = 11;
   private static final int NOT_EXP = 12;
-
   private static final int ADD_EXP = 20;
   private static final int MULTIPLY_EXP = 21;
   private static final int MAX_EXP = 22;
   private static final int EQUAL_EXP = 23;
   private static final int GREATER_EXP = 24;
   private static final int MIN_EXP = 25;
-
   private static final int SUB_EXP = 26;
   private static final int LESSER_EXP = 27;
   private static final int XOR_EXP = 28;
-
   private static final int SWITCH_EXP = 30;
   private static final int ASSIGN_EXP = 31;
   private static final int LOOKUP_EXP = 32;
@@ -25,7 +22,6 @@ final class BExpression {
   private static final int VARIABLE_EXP = 34;
   private static final int FOREIGN_VARIABLE_EXP = 35;
   private static final int VARIABLE_GET_EXP = 36;
-
   private int typ;
   private BExpression op1;
   private BExpression op2;
