@@ -1,5 +1,6 @@
 package com.routerbackend.dtos.utils;
 
+import com.routerbackend.controllers.utils.DateFormatter;
 import com.routerbackend.dtos.RouteDTO;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -27,7 +28,7 @@ public class Converter {
         routes.forEach(route -> {
             JSONObject jo = new JSONObject();
             jo.put("name", route.getName());
-            jo.put("dateCreated", route.getDateCreated());
+            jo.put("dateCreated", DateFormatter.formatDate(route.getDateCreated()));
             jo.put("distance", route.getLength());
             jo.put("time", route.getDuration());
             jo.put("ascend", route.getAscend());

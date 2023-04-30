@@ -1,5 +1,6 @@
 package com.routerbackend.controllers;
 
+import com.routerbackend.controllers.utils.DateFormatter;
 import com.routerbackend.dtos.RouteDTO;
 import com.routerbackend.dtos.UserDTO;
 import com.routerbackend.dtos.utils.Coordinates;
@@ -20,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -105,6 +107,7 @@ public class RouteController {
 
         if(user.isPresent()) {
             List<RouteDTO> routes = routeRepository.findByUserId(user.get().get_id());
+            Collections.reverse(routes);
             return new ResponseEntity<>(RoutesToJson(routes).toString(), HttpStatus.OK);
         }
         return new ResponseEntity<>("", HttpStatus.FORBIDDEN);
