@@ -13,7 +13,6 @@ import com.routerbackend.routinglogic.mapaccess.MatchedWaypoint;
 import com.routerbackend.routinglogic.utils.CheapAngleMeter;
 import com.routerbackend.routinglogic.utils.CheapRuler;
 
-import java.io.DataOutput;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,9 +95,7 @@ public final class RoutingContext {
   public double wayfraction;
   public int ilatshortest;
   public int ilonshortest;
-  public boolean countTraffic;
   public boolean inverseDirection;
-  public DataOutput trafficOutputStream;
   public double farTrafficWeight;
   public double nearTrafficWeight;
   public double farTrafficDecayLength;

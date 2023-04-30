@@ -75,16 +75,16 @@ public class OsmPathElement implements OsmPos {
   }
 
   // construct a path element from a path
-  public static final OsmPathElement create(OsmPath path, boolean countTraffic) {
+  public static final OsmPathElement create(OsmPath path) {
     OsmNode n = path.getTargetNode();
-    OsmPathElement pe = create(n.getILon(), n.getILat(), n.getSElev(), path.originElement, countTraffic);
+    OsmPathElement pe = create(n.getILon(), n.getILat(), n.getSElev(), path.originElement);
     pe.cost = path.cost;
     pe.message = path.message;
     return pe;
   }
 
-  public static final OsmPathElement create(int ilon, int ilat, short selev, OsmPathElement origin, boolean countTraffic) {
-    OsmPathElement pe = countTraffic ? new OsmPathElementWithTraffic() : new OsmPathElement();
+  public static final OsmPathElement create(int ilon, int ilat, short selev, OsmPathElement origin) {
+    OsmPathElement pe = new OsmPathElement();
     pe.ilon = ilon;
     pe.ilat = ilat;
     pe.selev = selev;

@@ -554,7 +554,6 @@ public class RoutingEngine {
         }
 
         if (path.airdistance == -1) {
-          path.unregisterUpTree(routingContext);
           continue;
         }
 
@@ -599,7 +598,6 @@ public class RoutingEngine {
         OsmNode currentNode = path.getTargetNode();
 
         if (currentLink.isLinkUnused()) {
-          path.unregisterUpTree(routingContext);
           continue;
         }
 
@@ -639,7 +637,7 @@ public class RoutingEngine {
                 + path.elevationCorrection(routingContext)
                 + (costCuttingTrack.cost - pe.cost);
               if (costEstimate <= maxTotalCost) {
-                matchPath = OsmPathElement.create(path, routingContext.countTraffic);
+                matchPath = OsmPathElement.create(path);
               }
               if (costEstimate < maxTotalCost) {
                 maxTotalCost = costEstimate;
@@ -666,7 +664,6 @@ public class RoutingEngine {
 
         // recheck cutoff before doing expensive stuff
         if (path.cost + path.airdistance > maxTotalCost + 100) {
-          path.unregisterUpTree(routingContext);
           continue;
         }
 
@@ -699,7 +696,7 @@ public class RoutingEngine {
               if (routingContext.turnInstructionMode > 0) {
                 OsmPath detour = routingContext.createPath(path, link, refTrack, true);
                 if (detour.cost >= 0. && nextId != startNodeId1 && nextId != startNodeId2) {
-                  guideTrack.registerDetourForId(currentNode.getIdFromPos(), OsmPathElement.create(detour, false));
+                  guideTrack.registerDetourForId(currentNode.getIdFromPos(), OsmPathElement.create(detour));
                 }
               }
               continue;
@@ -750,8 +747,6 @@ public class RoutingEngine {
             }
           }
         }
-
-        path.unregisterUpTree(routingContext);
       }
     }
 
@@ -765,12 +760,11 @@ public class RoutingEngine {
   private void addToOpenset(OsmPath path) {
     if (path.cost >= 0) {
       openSet.add(path.cost + (int) (path.airdistance * airDistanceCostFactor), path);
-      path.registerUpTree();
     }
   }
 
   private OsmTrack compileTrack(OsmPath path) {
-    OsmPathElement element = OsmPathElement.create(path, false);
+    OsmPathElement element = OsmPathElement.create(path);
 
     // for final track, cut endnode
     if (guideTrack != null && element.origin != null) {
