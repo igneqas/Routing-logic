@@ -60,12 +60,6 @@ public class OsmPathElement implements OsmPos {
     }
   }
 
-  public final void setAngle(float e) {
-    if (message != null) {
-      message.turnangle = e;
-    }
-  }
-
   public final long getIdFromPos() {
     return ((long) ilon) << 32 | ilat;
   }

@@ -15,28 +15,11 @@ import com.routerbackend.routinglogic.utils.ByteArrayUnifier;
 
 public class OsmNode extends OsmLink implements OsmPos
 {
-  /**
-   * The latitude
-   */
   public int latitude;
-
-  /**
-   * The longitude
-   */
   public int longitude;
-
-  /**
-   * The elevation
-   */
   public short elevation = Short.MIN_VALUE;
-
-  /**
-   * The node-tags, if any
-   */
   public byte[] nodeDescription;
-
   public TurnRestriction firstRestriction;
-
   public int visitID;
 
   public void addTurnRestriction(TurnRestriction tr) {
@@ -44,9 +27,6 @@ public class OsmNode extends OsmLink implements OsmPos
     firstRestriction = tr;
   }
 
-  /**
-   * The links to other nodes
-   */
   public OsmLink firstlink;
 
   public OsmNode() {

@@ -58,13 +58,6 @@ public final class RoutingContext {
     elevationmaxbuffer = (int) (expressionContextGlobal.getVariableValue("elevationmaxbuffer", 10.f) * 1000000);
     elevationbufferreduce = (int) (expressionContextGlobal.getVariableValue("elevationbufferreduce", 0.f) * 10000);
 
-    farTrafficWeight = expressionContextGlobal.getVariableValue("farTrafficWeight", 2.f);
-    nearTrafficWeight = expressionContextGlobal.getVariableValue("nearTrafficWeight", 2.f);
-    farTrafficDecayLength = expressionContextGlobal.getVariableValue("farTrafficDecayLength", 30000.f);
-    nearTrafficDecayLength = expressionContextGlobal.getVariableValue("nearTrafficDecayLength", 3000.f);
-    trafficSourceExponent = expressionContextGlobal.getVariableValue("trafficSourceExponent", -0.7f);
-    trafficSourceMinDist = expressionContextGlobal.getVariableValue("trafficSourceMinDist", 3000.f);
-
     int tiMode = (int) expressionContextGlobal.getVariableValue("turnInstructionMode", 0.f);
     if (tiMode != 1) // automatic selection from coordinate source
     {
@@ -96,12 +89,6 @@ public final class RoutingContext {
   public int ilatshortest;
   public int ilonshortest;
   public boolean inverseDirection;
-  public double farTrafficWeight;
-  public double nearTrafficWeight;
-  public double farTrafficDecayLength;
-  public double nearTrafficDecayLength;
-  public double trafficSourceExponent;
-  public double trafficSourceMinDist;
   public int turnInstructionMode; // 0=none, 1=auto, 2=locus, 3=osmand, 4=comment-style, 5=gpsies-style
 
   // Speed computation model (for bikes)

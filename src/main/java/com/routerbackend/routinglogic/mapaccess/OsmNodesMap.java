@@ -124,8 +124,6 @@ public final class OsmNodesMap {
 
   private List<OsmNode> nodes2check;
 
-  // is there an escape from this node
-  // to a hollow node (or destination node) ?
   public boolean canEscape(OsmNode n0) {
     boolean sawLowIDs = false;
     lastVisitID++;
@@ -211,17 +209,11 @@ public final class OsmNodesMap {
     return abUnifier;
   }
 
-  /**
-   * Get a node from the map
-   *
-   * @return the node for the given id if exist, else null
-   */
   public OsmNode get(int ilon, int ilat) {
     testKey.longitude = ilon;
     testKey.latitude = ilat;
     return hmap.get(testKey);
   }
-
 
   public void remove(OsmNode node) {
     if (node != endNode1 && node != endNode2) // keep endnodes in hollow-map even when loaded
@@ -230,11 +222,6 @@ public final class OsmNodesMap {
     }
   }
 
-  /**
-   * Put a node into the map
-   *
-   * @return the previous node if that id existed, else null
-   */
   public OsmNode put(OsmNode node) {
     return hmap.put(node, node);
   }

@@ -96,15 +96,8 @@ abstract class OsmPath implements OsmLinkHolder {
     byte[] description = link.descriptionBitmap;
     if (description == null) { // could be a beeline path
       message = new MessageData();
-      message.turnangle = 0;
       message.time = (float) 1;
       message.energy = (float) 0;
-      message.priorityclassifier = 0;
-      message.classifiermask = 0;
-      message.lon = targetNode.getILon();
-      message.lat = targetNode.getILat();
-      message.ele = Short.MIN_VALUE;
-      message.linkdist = sourceNode.calculateDistance(targetNode);
       message.wayKeyValues = "direct_segment=" + seg;
       seg++;
       return;
@@ -144,9 +137,6 @@ abstract class OsmPath implements OsmLinkHolder {
       }
 
       int iicost = (int) initialcost;
-      if (message != null) {
-        message.linkinitcost += iicost;
-      }
       cost += iicost;
     }
     lastClassifier = newClassifier;
@@ -249,9 +239,6 @@ abstract class OsmPath implements OsmLinkHolder {
         }
       }
 
-      if (message != null) {
-        message.linkdist += dist;
-      }
       linkdisttotal += dist;
 
       // apply a start-direction if appropriate (by faking the origin position)
@@ -294,14 +281,8 @@ abstract class OsmPath implements OsmLinkHolder {
       computeKinematic(rc, dist, delta_h, detailMode);
 
       if (message != null) {
-        message.turnangle = (float) angle;
         message.time = (float) getTotalTime();
         message.energy = (float) getTotalEnergy();
-        message.priorityclassifier = priorityclassifier;
-        message.classifiermask = classifiermask;
-        message.lon = lon2;
-        message.lat = lat2;
-        message.ele = originEle2;
         message.wayKeyValues = rc.expressionContextWay.getKeyValueDescription(isReverse, description);
       }
 

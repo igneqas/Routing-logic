@@ -13,15 +13,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-final public class PhysicalFile {
+public final class PhysicalFile {
   RandomAccessFile ra;
   long[] fileIndex = new long[25];
   int[] fileHeaderCrcs;
-
   public long creationTime;
-
   String fileName;
-
   public int divisor = 80;
 
   public PhysicalFile(File f, DataBuffers dataBuffers, int lookupVersion) throws IOException {
@@ -46,9 +43,7 @@ final public class PhysicalFile {
 
     long pos = fileIndex[24];
     int extraLen = 8 + 26 * 4;
-
     if (len == pos) return; // old format o.k.
-
     if (len < pos + extraLen) // > is o.k. for future extensions!
     {
       throw new IOException("file of size " + len + " too short, should be " + (pos + extraLen));
@@ -58,7 +53,6 @@ final public class PhysicalFile {
     ra.readFully(iobuffer, 0, extraLen);
     dis = new ByteDataReader(iobuffer);
     creationTime = dis.readLong();
-
     int crcData = dis.readInt();
     if (crcData == fileIndexCrc) {
       divisor = 80; // old format
@@ -67,6 +61,7 @@ final public class PhysicalFile {
     } else {
       throw new IOException("top index checksum error");
     }
+
     fileHeaderCrcs = new int[25];
     for (int i = 0; i < 25; i++) {
       fileHeaderCrcs[i] = dis.readInt();

@@ -1,6 +1,5 @@
 package com.routerbackend.controllers;
 
-import com.routerbackend.controllers.utils.DateFormatter;
 import com.routerbackend.dtos.RouteDTO;
 import com.routerbackend.dtos.UserDTO;
 import com.routerbackend.dtos.utils.Coordinates;

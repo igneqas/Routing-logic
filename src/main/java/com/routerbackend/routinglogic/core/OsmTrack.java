@@ -8,8 +8,6 @@ package com.routerbackend.routinglogic.core;
 import com.routerbackend.routinglogic.utils.CompactLongMap;
 import com.routerbackend.routinglogic.utils.FrozenLongMap;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 
 public final class OsmTrack {
@@ -18,9 +16,6 @@ public final class OsmTrack {
     public int plainAscend;
     public int cost;
     public int energy;
-
-  // csv-header-line
-  private static final String MESSAGES_HEADER = "Longitude\tLatitude\tElevation\tDistance\tCostPerKm\tElevCost\tTurnCost\tNodeCost\tInitialCost\tWayTags\tNodeTags\tTime\tEnergy";
 
   public static class OsmPathElementHolder {
     public OsmPathElement node;
@@ -101,28 +96,6 @@ public final class OsmTrack {
     nodesMap = new FrozenLongMap<>(nodesMap);
   }
 
-  private List<String> aggregateMessages() {
-    ArrayList<String> res = new ArrayList<>();
-    MessageData current = null;
-    for (OsmPathElement n : nodes) {
-      if (n.message != null && n.message.wayKeyValues != null) {
-        MessageData md = n.message.copy();
-        if (current != null) {
-          if (current.nodeKeyValues != null || !current.wayKeyValues.equals(md.wayKeyValues)) {
-            res.add(current.toMessage());
-          } else {
-            md.add(current);
-          }
-        }
-        current = md;
-      }
-    }
-    if (current != null) {
-      res.add(current.toMessage());
-    }
-    return res;
-  }
-
   public void addNodes(OsmTrack t) {
     for (OsmPathElement n : t.nodes)
       addNode(n);
@@ -192,30 +165,7 @@ public final class OsmTrack {
     sb.append("        \"totalTime\": \"").append(getTotalSeconds()).append("\",\n");
     sb.append("        \"total-energy\": \"").append(energy).append("\",\n");
     sb.append("        \"cost\": \"").append(cost).append("\",\n");
-
-    //  ... traditional message list
-    {
-      sb.append("        \"messages\": [\n");
-      sb.append("          [\"").append(MESSAGES_HEADER.replaceAll("\t", "\", \"")).append("\"],\n");
-      for (String m : aggregateMessages()) {
-        sb.append("          [\"").append(m.replaceAll("\t", "\", \"")).append("\"],\n");
-      }
-      sb.deleteCharAt(sb.lastIndexOf(","));
-      sb.append("        ],\n");
-    }
-
-    if (getTotalSeconds() > 0) {
-      sb.append("        \"times\": [");
-      DecimalFormat decimalFormat = (DecimalFormat) NumberFormat.getInstance(Locale.ENGLISH);
-      decimalFormat.applyPattern("0.###");
-      for (OsmPathElement n : nodes) {
-        sb.append(decimalFormat.format(n.getTime())).append(",");
-      }
-      sb.deleteCharAt(sb.lastIndexOf(","));
-      sb.append("]\n");
-    } else {
-      sb.deleteCharAt(sb.lastIndexOf(","));
-    }
+    sb.deleteCharAt(sb.lastIndexOf(","));
 
     sb.append("      },\n");
     sb.append("      \"geometry\": {\n");

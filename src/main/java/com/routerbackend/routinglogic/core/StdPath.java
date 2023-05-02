@@ -53,11 +53,6 @@ final class StdPath extends OsmPath {
 
     // penalty for turning angle
     int turncost = (int) ((1. - cosangle) * turncostbase + 0.2); // e.g. turncost=90 -> 90 degree = 90m penalty
-    if (message != null) {
-      message.linkturncost += turncost;
-      message.turnangle = (float) angle;
-    }
-
     double sectionCost = turncost;
 
     // *** penalty for elevation
@@ -86,9 +81,6 @@ final class StdPath extends OsmPath {
       if (rc.downhillcostdiv > 0) {
         int elevationCost = reduce / rc.downhillcostdiv;
         sectionCost += elevationCost;
-        if (message != null) {
-          message.linkelevationcost += elevationCost;
-        }
       }
     } else if (ehbd < 0) {
       ehbd = 0;
@@ -112,9 +104,6 @@ final class StdPath extends OsmPath {
       if (rc.uphillcostdiv > 0) {
         int elevationCost = reduce / rc.uphillcostdiv;
         sectionCost += elevationCost;
-        if (message != null) {
-          message.linkelevationcost += elevationCost;
-        }
       }
     } else if (ehbu < 0) {
       ehbu = 0;
@@ -122,11 +111,6 @@ final class StdPath extends OsmPath {
 
     // get the effective costfactor (slope dependent)
     float costfactor = cfup * upweight + cf * (1.f - upweight - downweight) + cfdown * downweight;
-
-    if (message != null) {
-      message.costfactor = costfactor;
-    }
-
     sectionCost += dist * costfactor + 0.5f;
 
     return sectionCost;
@@ -142,10 +126,7 @@ final class StdPath extends OsmPath {
       if (initialCost >= 1000000.) {
         return -1.;
       }
-      if (message != null) {
-        message.linknodecost += (int) initialCost;
-        message.nodeKeyValues = rc.expressionContextNode.getKeyValueDescription(nodeAccessGranted, targetNode.nodeDescription);
-      }
+
       return initialCost;
     }
     return 0.;
