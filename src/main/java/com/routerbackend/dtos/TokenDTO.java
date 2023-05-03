@@ -17,22 +17,6 @@ public class TokenDTO {
 
     public String userId;
 
-    public String get_id() {
-        return _id;
-    }
-
-    public void set_id(String _id) {
-        this._id = _id;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
     public boolean isRevoked() {
         return revoked;
     }
@@ -47,14 +31,6 @@ public class TokenDTO {
 
     public void setExpired(boolean expired) {
         this.expired = expired;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
     }
 
     public TokenDTO(String token, boolean revoked, boolean expired, String userId) {

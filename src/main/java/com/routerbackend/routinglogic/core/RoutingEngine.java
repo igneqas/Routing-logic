@@ -27,7 +27,6 @@ public class RoutingEngine {
   private OsmPathElement matchPath;
 
   private long startTime;
-  private long maxRunningTime;
 
   public RoutingEngine(List<OsmNodeNamed> waypoints, RoutingContext routingContext) {
     this.waypoints = waypoints;
@@ -500,11 +499,8 @@ public class RoutingEngine {
     boolean needNonPanicProcessing = false;
 
     for (; ; ) {
-      if (maxRunningTime > 0) {
-        long timeout = maxRunningTime;
-        if (System.currentTimeMillis() - startTime > timeout) {
-          throw new IllegalArgumentException(operationName + " timeout after " + (timeout / 1000) + " seconds");
-        }
+      if (MAX_RUNNING_TIME > 0 && System.currentTimeMillis() - startTime > MAX_RUNNING_TIME) {
+        throw new IllegalArgumentException(operationName + " timeout after " + (MAX_RUNNING_TIME / 1000) + " seconds");
       }
 
       synchronized (openSet) {

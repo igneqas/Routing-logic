@@ -159,12 +159,12 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
 
     if (!fixTagsWritten) {
       fixTagsWritten = true;
-      if ("way".equals(context)) addLookupValue("reversedirection", "yes", null);
-      else if ("node".equals(context)) addLookupValue("nodeaccessgranted", "yes", null);
+      if ("way".equals(context)) addLookupValue("reversedirection", "yes");
+      else if ("node".equals(context)) addLookupValue("nodeaccessgranted", "yes");
     }
     if ("reversedirection".equals(name)) return; // this is hardcoded
     if ("nodeaccessgranted".equals(name)) return; // this is hardcoded
-    BExpressionLookupValue newValue = addLookupValue(name, value, null);
+    BExpressionLookupValue newValue = addLookupValue(name, value);
 
     // add aliases
     while (newValue != null && tk.hasMoreTokens()) newValue.addAlias(tk.nextToken());
@@ -298,14 +298,10 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
    *
    * @return a newly created value element, if any, to optionally add aliases
    */
-  public BExpressionLookupValue addLookupValue(String name, String value, int[] lookupData2) {
+  public BExpressionLookupValue addLookupValue(String name, String value) {
     BExpressionLookupValue newValue = null;
     Integer num = lookupNumbers.get(name);
     if (num == null) {
-      if (lookupData2 != null) {
-        // do not create unknown name for external data array
-        return newValue;
-      }
 
       // unknown name, create
       num = Integer.valueOf(lookupValues.size());
@@ -324,120 +320,12 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
     BExpressionLookupValue[] values = lookupValues.get(inum);
     int[] histo = lookupHistograms.get(inum);
     int i = 0;
-    boolean bFoundAsterix = false;
     for (; i < values.length; i++) {
       BExpressionLookupValue v = values[i];
-      if (v.equals("*")) bFoundAsterix = true;
       if (v.matches(value)) break;
     }
     if (i == values.length) {
-      if (lookupData2 != null) {
-        // do not create unknown value for external data array,
-        // record as 'unknown' instead
-        lookupData2[inum] = 1; // 1 == unknown
-        if (bFoundAsterix) {
-          // found value for lookup *
-          //System.out.println( "add unknown " + name + "  " + value );
-          String org = value;
-          try {
-            // remove some unused characters
-            value = value.replace(",", ".");
-            value = value.replace(">", "");
-            value = value.replace("_", "");
-            if (value.indexOf("-") == 0) value = value.substring(1);
-            if (value.indexOf("~") == 0) value = value.substring(1);
-            if (value.contains("-")) {    // replace eg. 1.4-1.6 m
-              String tmp = value.substring(value.indexOf("-") + 1).replaceAll("[0-9.,-]", "");
-              value = value.substring(0, value.indexOf("-")) + tmp;
-            }
-            // do some value conversion
-            if (value.toLowerCase().contains("ft")) {
-              float foot = 0f;
-              int inch = 0;
-              String[] sa = value.toLowerCase().trim().split("ft");
-              if (sa.length >= 1) foot = Float.parseFloat(sa[0].trim());
-              if (sa.length == 2) {
-                value = sa[1];
-                if (value.indexOf("in") > 0) value = value.substring(0, value.indexOf("in"));
-                inch = Integer.parseInt(value.trim());
-                foot += inch / 12f;
-              }
-              value = String.format(Locale.US, "%3.1f", foot * 0.3048f);
-            }
-            if (value.toLowerCase().contains("'")) {
-              float foot = 0f;
-              int inch = 0;
-              String[] sa = value.toLowerCase().trim().split("'");
-              if (sa.length >= 1) foot = Float.parseFloat(sa[0].trim());
-              if (sa.length == 2) {
-                value = sa[1];
-                if (value.indexOf("''") > 0) value = value.substring(0, value.indexOf("''"));
-                if (value.indexOf("\"") > 0) value = value.substring(0, value.indexOf("\""));
-                inch = Integer.parseInt(value.trim());
-                foot += inch / 12f;
-              }
-              value = String.format(Locale.US, "%3.1f", foot * 0.3048f);
-            } else if (value.contains("in") || value.contains("\"")) {
-              float inch = 0f;
-              if (value.indexOf("in") > 0) value = value.substring(0, value.indexOf("in"));
-              if (value.indexOf("\"") > 0) value = value.substring(0, value.indexOf("\""));
-              inch = Float.parseFloat(value.trim());
-              value = String.format(Locale.US, "%3.1f", inch * 0.0254f);
-            } else if (value.toLowerCase().contains("feet") || value.toLowerCase().contains("foot")) {
-              float feet = 0f;
-              String s = value.substring(0, value.toLowerCase().indexOf("f"));
-              feet = Float.parseFloat(s.trim());
-              value = String.format(Locale.US, "%3.1f", feet * 0.3048f);
-            } else if (value.toLowerCase().contains("fathom") || value.toLowerCase().contains("fm")) {
-              float fathom = 0f;
-              String s = value.substring(0, value.toLowerCase().indexOf("f"));
-              fathom = Float.parseFloat(s.trim());
-              value = String.format(Locale.US, "%3.1f", fathom * 1.8288f);
-            } else if (value.contains("cm")) {
-              String[] sa = value.trim().split("cm");
-              if (sa.length == 1) value = sa[0].trim();
-              float cm = Float.parseFloat(value.trim());
-              value = String.format(Locale.US, "%3.1f", cm * 100f);
-            } else if (value.toLowerCase().contains("meter")) {
-              String s = value.substring(0, value.toLowerCase().indexOf("m"));
-              value = s.trim();
-            } else if (value.toLowerCase().contains("mph")) {
-              value = value.replace("_", "");
-              String[] sa = value.trim().toLowerCase().split("mph");
-              if (sa.length >= 1) value = sa[0].trim();
-              float mph = Float.parseFloat(value.trim());
-              value = String.format(Locale.US, "%3.1f", mph * 1.609344f);
-            } else if (value.toLowerCase().contains("knot")) {
-              String[] sa = value.trim().toLowerCase().split("knot");
-              if (sa.length >= 1) value = sa[0].trim();
-              float nm = Float.parseFloat(value.trim());
-              value = String.format(Locale.US, "%3.1f", nm * 1.852f);
-            } else if (value.contains("kmh") || value.contains("km/h") || value.contains("kph")) {
-              String[] sa = value.trim().split("k");
-              if (sa.length == 1) value = sa[0].trim();
-            } else if (value.contains("m")) {
-              String s = value.substring(0, value.toLowerCase().indexOf("m"));
-              value = s.trim();
-            } else if (value.contains("(")) {
-              String s = value.substring(0, value.toLowerCase().indexOf("("));
-              value = s.trim();
-            }
-            // found negative maxdraft values
-            // no negative values
-            // values are float with 2 decimals
-            lookupData2[inum] = 1000 + (int) (Math.abs(Float.parseFloat(value)) * 100f);
-          } catch (Exception e) {
-            // ignore errors
-            System.err.println("error for " + name + "  " + org + " trans " + value + " " + e.getMessage());
-            lookupData2[inum] = 0;
-          }
-        }
-        return newValue;
-      }
 
-      if (i == 500) {
-        return newValue;
-      }
       // unknown value, create
       BExpressionLookupValue[] nvalues = new BExpressionLookupValue[values.length + 1];
       int[] nhisto = new int[values.length + 1];
@@ -452,10 +340,9 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
     }
 
     histo[i]++;
-
     // finally remember the actual data
-    if (lookupData2 != null) lookupData2[inum] = i;
-    else lookupData[inum] = i;
+    lookupData[inum] = i;
+
     return newValue;
   }
 

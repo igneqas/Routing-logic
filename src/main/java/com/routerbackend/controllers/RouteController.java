@@ -9,7 +9,6 @@ import com.routerbackend.routinglogic.core.OsmNodeNamed;
 import com.routerbackend.routinglogic.core.OsmTrack;
 import com.routerbackend.routinglogic.core.RoutingContext;
 import com.routerbackend.routinglogic.core.RoutingEngine;
-import com.routerbackend.requesthandling.incomingrequest.routing.IRouteRequestParser;
 import com.routerbackend.requesthandling.incomingrequest.routing.RouteRequestParser;
 import com.routerbackend.security.config.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,7 +48,7 @@ public class RouteController {
         if(lonlats == null || lonlats.isEmpty())
             return new ResponseEntity<>("Provide coordinates.", HttpStatus.BAD_REQUEST);
 
-        IRouteRequestParser routeRequestParser = new RouteRequestParser();
+        RouteRequestParser routeRequestParser = new RouteRequestParser();
         RoutingContext routingContext = routeRequestParser.readRoutingContext(profile, alternativeIdx);
         List<OsmNodeNamed> waypointList = routeRequestParser.readWaypointList(lonlats);
         RoutingEngine routingEngine = new RoutingEngine(waypointList, routingContext);

@@ -9,11 +9,19 @@ public class Coordinates {
         this.longitude = longitude;
     }
 
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
     @Override
     public String toString() {
-        return "Coordinates{" +
-                "latitude=" + latitude +
-                ", longitude=" + longitude +
+        return "{" +
+                "\"latitude\"=" + latitude +
+                ", \"longitude\"=" + longitude +
                 '}';
     }
 }

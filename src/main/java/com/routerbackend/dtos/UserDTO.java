@@ -11,7 +11,7 @@ import java.util.Collection;
 public class UserDTO implements UserDetails {
 
     @Id
-            String _id;
+    String _id;
     String username;
     String email;
 
@@ -70,15 +70,7 @@ public class UserDTO implements UserDetails {
         return _id;
     }
 
-    public void set_id(String _id) {
-        this._id = _id;
-    }
-
     public String getEmail() {
         return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 }

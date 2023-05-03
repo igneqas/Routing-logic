@@ -46,16 +46,8 @@ public class RouteDTO {
                 '}';
     }
 
-    public String get_id() {
-        return _id;
-    }
-
     public String getName() {
         return name;
-    }
-
-    public String getUserId() {
-        return userId;
     }
 
     public Date getDateCreated() {

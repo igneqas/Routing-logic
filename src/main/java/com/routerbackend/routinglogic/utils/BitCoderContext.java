@@ -16,6 +16,7 @@ public class BitCoderContext {
 
   private static final int[] reverse_byte = new int[256];
 
+  //TODO: Check this
   private static final int[] bm2bits = new int[256];
 
   static {
@@ -285,30 +286,5 @@ public class BitCoderContext {
 
   public final int getReadingBitPosition() {
     return (idx << 3) + 8 - bits;
-  }
-
-  public static void main(String[] args) {
-    byte[] ab = new byte[581969];
-    BitCoderContext ctx = new BitCoderContext(ab);
-    for (int i = 0; i < 31; i++) {
-      ctx.encodeVarBits((1 << i) + 3);
-    }
-    for (int i = 0; i < 100000; i += 13) {
-      ctx.encodeVarBits(i);
-    }
-    ctx.closeAndGetEncodedLength();
-    ctx = new BitCoderContext(ab);
-
-    for (int i = 0; i < 31; i++) {
-      int value = ctx.decodeVarBits();
-      int v0 = (1 << i) + 3;
-      if (v0 != value)
-        throw new RuntimeException("value mismatch value=" + value + "v0=" + v0);
-    }
-    for (int i = 0; i < 100000; i += 13) {
-      int value = ctx.decodeVarBits();
-      if (value != i)
-        throw new RuntimeException("value mismatch i=" + i + "v=" + value);
-    }
   }
 }

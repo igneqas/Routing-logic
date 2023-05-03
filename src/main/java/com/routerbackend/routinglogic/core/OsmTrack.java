@@ -10,7 +10,7 @@ import com.routerbackend.routinglogic.utils.FrozenLongMap;
 
 import java.util.*;
 
-public final class OsmTrack {
+public class OsmTrack {
     public int distance;
     public int ascend;
     public int plainAscend;
@@ -153,10 +153,8 @@ public final class OsmTrack {
     StringBuilder sb = new StringBuilder(8192);
 
     sb.append("{\n");
-    sb.append("  \"type\": \"FeatureCollection\",\n");
     sb.append("  \"features\": [\n");
     sb.append("    {\n");
-    sb.append("      \"type\": \"Feature\",\n");
     sb.append("      \"properties\": {\n");
     sb.append("        \"name\": \"").append(name).append("\",\n");
     sb.append("        \"trackLength\": \"").append(distance).append("\",\n");
@@ -164,12 +162,9 @@ public final class OsmTrack {
     sb.append("        \"plain-ascend\": \"").append(plainAscend).append("\",\n");
     sb.append("        \"totalTime\": \"").append(getTotalSeconds()).append("\",\n");
     sb.append("        \"total-energy\": \"").append(energy).append("\",\n");
-    sb.append("        \"cost\": \"").append(cost).append("\",\n");
-    sb.deleteCharAt(sb.lastIndexOf(","));
-
+    sb.append("        \"cost\": \"").append(cost).append("\"\n");
     sb.append("      },\n");
     sb.append("      \"geometry\": {\n");
-    sb.append("        \"type\": \"LineString\",\n");
     sb.append("        \"coordinates\": [\n");
 
     for (OsmPathElement n : nodes) {

@@ -16,7 +16,7 @@ import com.routerbackend.routinglogic.utils.CheapRuler;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class RoutingContext {
+public class RoutingContext {
   private int alternativeIdx;
   private String profileName;
   public BExpressionContextWay expressionContextWay;

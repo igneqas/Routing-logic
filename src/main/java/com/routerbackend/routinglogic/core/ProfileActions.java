@@ -13,7 +13,9 @@ import java.io.File;
 
 import static com.routerbackend.Constants.MEMORY_CLASS;
 
-public final class ProfileActions {
+public class ProfileActions {
+
+  private ProfileActions(){}
 
   public static void parseProfile(RoutingContext routingContext) {
     String profileBaseDir = "src/main/java/com/data/profiles";
@@ -32,5 +34,4 @@ public final class ProfileActions {
 
     routingContext.readGlobalConfig();
   }
-
 }

@@ -14,9 +14,14 @@ public class Converter {
         List<Coordinates> coordinates = new ArrayList<>();
         for(int i=0; i<jsonArray.length(); i++){
             JSONArray coordinatesArray = jsonArray.getJSONArray(i);
-            BigDecimal bd1 = (BigDecimal) coordinatesArray.get(0);
-            BigDecimal bd2 = (BigDecimal) coordinatesArray.get(1);
-            Coordinates coordinatesObject = new Coordinates(bd2.doubleValue(), bd1.doubleValue());
+            Coordinates coordinatesObject;
+            try {
+                BigDecimal bd1 = (BigDecimal) coordinatesArray.get(0);
+                BigDecimal bd2 = (BigDecimal) coordinatesArray.get(1);
+                coordinatesObject = new Coordinates(bd2.doubleValue(), bd1.doubleValue());
+            } catch (ClassCastException e) {
+                coordinatesObject = new Coordinates(coordinatesArray.getDouble(0), coordinatesArray.getDouble(1));
+            }
             coordinates.add(coordinatesObject);
         }
 
