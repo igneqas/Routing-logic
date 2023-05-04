@@ -58,12 +58,6 @@ public class RoutingContext {
     elevationmaxbuffer = (int) (expressionContextGlobal.getVariableValue("elevationmaxbuffer", 10.f) * 1000000);
     elevationbufferreduce = (int) (expressionContextGlobal.getVariableValue("elevationbufferreduce", 0.f) * 10000);
 
-    int tiMode = (int) expressionContextGlobal.getVariableValue("turnInstructionMode", 0.f);
-    if (tiMode != 1) // automatic selection from coordinate source
-    {
-      turnInstructionMode = tiMode;
-    }
-
     // Speed computation model (for bikes)
     // Total mass (biker + bike + luggages or hiker), in kg
     totalMass = expressionContextGlobal.getVariableValue("totalMass", 90.f);
@@ -89,7 +83,6 @@ public class RoutingContext {
   public int ilatshortest;
   public int ilonshortest;
   public boolean inverseDirection;
-  public int turnInstructionMode; // 0=none, 1=auto, 2=locus, 3=osmand, 4=comment-style, 5=gpsies-style
 
   // Speed computation model (for bikes)
   public double totalMass;

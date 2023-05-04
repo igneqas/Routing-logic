@@ -29,7 +29,7 @@ final class OsmFile {
   private int ncaches;
   private int indexsize;
 
-  public OsmFile(PhysicalFile rafile, int lonDegree, int latDegree, DataBuffers dataBuffers) throws IOException {
+  public OsmFile(PhysicalFile rafile, int lonDegree, int latDegree) throws IOException {
     this.lonDegree = lonDegree;
     this.latDegree = latDegree;
     int lonMod5 = lonDegree % 5;
@@ -43,7 +43,7 @@ final class OsmFile {
       ncaches = divisor * divisor;
       indexsize = ncaches * 4;
 
-      byte[] iobuffer = dataBuffers.iobuffer;
+      byte[] iobuffer = new byte[65636];
       filename = rafile.fileName;
 
       long[] index = rafile.fileIndex;
@@ -82,11 +82,11 @@ final class OsmFile {
     return microCaches[subIdx];
   }
 
-  public MicroCache createMicroCache(int ilon, int ilat, DataBuffers dataBuffers, TagValueValidator wayValidator, WaypointMatcher waypointMatcher, OsmNodesMap hollowNodes)
+  public MicroCache createMicroCache(int ilon, int ilat, TagValueValidator wayValidator, WaypointMatcher waypointMatcher, OsmNodesMap hollowNodes)
     throws Exception {
     int lonIdx = ilon / cellsize;
     int latIdx = ilat / cellsize;
-    MicroCache segment = createMicroCache(lonIdx, latIdx, dataBuffers, wayValidator, waypointMatcher, true, hollowNodes);
+    MicroCache segment = createMicroCache(lonIdx, latIdx, wayValidator, waypointMatcher, true, hollowNodes);
     int subIdx = (latIdx - divisor * latDegree) * divisor + (lonIdx - divisor * lonDegree);
     microCaches[subIdx] = segment;
     return segment;
@@ -106,14 +106,15 @@ final class OsmFile {
         is.readFully(iobuffer, 0, size);
       }
     }
+
     return size;
   }
 
-  public MicroCache createMicroCache(int lonIdx, int latIdx, DataBuffers dataBuffers, TagValueValidator wayValidator,
+  public MicroCache createMicroCache(int lonIdx, int latIdx, TagValueValidator wayValidator,
                                      WaypointMatcher waypointMatcher, boolean reallyDecode, OsmNodesMap hollowNodes) throws IOException {
     int subIdx = (latIdx - divisor * latDegree) * divisor + (lonIdx - divisor * lonDegree);
 
-    byte[] ab = dataBuffers.iobuffer;
+    byte[] ab = new byte[65636];
     int asize = getDataInputForSubIdx(subIdx, ab);
 
     if (asize == 0) {
@@ -130,10 +131,7 @@ final class OsmFile {
       if (!reallyDecode) {
         return null;
       }
-      if (hollowNodes == null) {
-        return new MicroCache2(bc, dataBuffers, lonIdx, latIdx, divisor, wayValidator, waypointMatcher);
-      }
-      new DirectWeaver(bc, dataBuffers, lonIdx, latIdx, divisor, wayValidator, waypointMatcher, hollowNodes);
+      new DirectWeaver(bc, lonIdx, latIdx, divisor, wayValidator, waypointMatcher, hollowNodes);
       return MicroCache.emptyNonVirgin;
     } finally {
       // crc check only if the buffer has not been fully read

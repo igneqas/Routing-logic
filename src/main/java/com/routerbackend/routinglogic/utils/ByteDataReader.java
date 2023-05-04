@@ -49,37 +49,6 @@ public class ByteDataReader {
     return (i7 << 56) + (i6 << 48) + (i5 << 40) + (i4 << 32) + (i3 << 24) + (i2 << 16) + (i1 << 8) + i0;
   }
 
-  public final boolean readBoolean() {
-    int i0 = ab[aboffset++] & 0xff;
-    return i0 != 0;
-  }
-
-  public final short readShort() {
-    int i1 = ab[aboffset++] & 0xff;
-    int i0 = ab[aboffset++] & 0xff;
-    return (short) ((i1 << 8) | i0);
-  }
-
-  /**
-   * Read a size value and return a pointer to the end of a data section of that size
-   *
-   * @return the pointer to the first byte after that section
-   */
-  public final int getEndPointer() {
-    int size = readVarLengthUnsigned();
-    return aboffset + size;
-  }
-
-  public final byte[] readDataUntil(int endPointer) {
-    int size = endPointer - aboffset;
-    if (size == 0) {
-      return null;
-    }
-    byte[] data = new byte[size];
-    readFully(data);
-    return data;
-  }
-
   public final int readVarLengthSigned() {
     int v = readVarLengthUnsigned();
     return (v & 1) == 0 ? v >> 1 : -(v >> 1);
@@ -97,11 +66,6 @@ public class ByteDataReader {
     if (b >= 0) return v;
     v |= ((b = ab[aboffset++]) & 0xf) << 28;
     return v;
-  }
-
-  public final void readFully(byte[] ta) {
-    System.arraycopy(ab, aboffset, ta, 0, ta.length);
-    aboffset += ta.length;
   }
 
   public final boolean hasMoreData() {

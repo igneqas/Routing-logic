@@ -7,7 +7,6 @@
 package com.routerbackend.routinglogic.expressions;
 
 import com.routerbackend.routinglogic.utils.BitCoderContext;
-import com.routerbackend.routinglogic.utils.IByteArrayUnifier;
 import com.routerbackend.routinglogic.utils.Crc32;
 import com.routerbackend.routinglogic.utils.LruMap;
 
@@ -17,7 +16,7 @@ import java.io.FileReader;
 import java.util.*;
 
 
-public abstract class BExpressionContext implements IByteArrayUnifier {
+public abstract class BExpressionContext {
   private static final String CONTEXT_TAG = "---context:";
   private static final String MODEL_TAG = "---model:";
 
@@ -191,7 +190,6 @@ public abstract class BExpressionContext implements IByteArrayUnifier {
 
   private CacheNode lastCacheNode = new CacheNode();
 
-   @Override
   public final byte[] unify(byte[] ab, int offset, int len) {
     probeCacheNode.ab = null; // crc based cache lookup only
     probeCacheNode.hash = Crc32.crc(ab, offset, len);

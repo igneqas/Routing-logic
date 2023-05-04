@@ -12,13 +12,13 @@ import com.routerbackend.routinglogic.utils.ByteDataWriter;
 public final class DirectWeaver extends ByteDataWriter {
   private long id64Base;
 
-  public DirectWeaver(StatCoderContext bc, DataBuffers dataBuffers, int lonIdx, int latIdx, int divisor, TagValueValidator wayValidator, WaypointMatcher waypointMatcher, OsmNodesMap hollowNodes) {
+  public DirectWeaver(StatCoderContext bc, int lonIdx, int latIdx, int divisor, TagValueValidator wayValidator, WaypointMatcher waypointMatcher, OsmNodesMap hollowNodes) {
     super(null);
     int cellsize = 1000000 / divisor;
     id64Base = ((long) (lonIdx * cellsize)) << 32 | (latIdx * cellsize);
 
-    TagValueCoder wayTagCoder = new TagValueCoder(bc, dataBuffers, wayValidator);
-    TagValueCoder nodeTagCoder = new TagValueCoder(bc, dataBuffers, null);
+    TagValueCoder wayTagCoder = new TagValueCoder(bc, wayValidator);
+    TagValueCoder nodeTagCoder = new TagValueCoder(bc, null);
     NoisyDiffCoder nodeIdxDiff = new NoisyDiffCoder(bc);
     NoisyDiffCoder nodeEleDiff = new NoisyDiffCoder(bc);
     NoisyDiffCoder extLonDiff = new NoisyDiffCoder(bc);
@@ -27,7 +27,7 @@ public final class DirectWeaver extends ByteDataWriter {
 
     int size = bc.decodeNoisyNumber(5);
 
-    int[] faid = size > dataBuffers.ibuf2.length ? new int[size] : dataBuffers.ibuf2;
+    int[] faid = size > 2048 ? new int[size] : new int[2048];
 
     bc.decodeSortedArray(faid, 0, size, 29, 0);
 
@@ -47,7 +47,7 @@ public final class DirectWeaver extends ByteDataWriter {
     }
 
     int netdatasize = bc.decodeNoisyNumber(10); // (not needed for direct weaving)
-    ab = dataBuffers.bbuf1;
+    ab = new byte[65636];
     aboffset = 0;
 
     int selev = 0;

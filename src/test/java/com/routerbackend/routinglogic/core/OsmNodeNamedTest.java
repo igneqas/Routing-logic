@@ -15,7 +15,7 @@ public class OsmNodeNamedTest {
   }
 
   @Test
-  public void testDistanceWithinRadius() {
+  public void distanceWithinRadius_calculatesCorrectly() {
     // Segment ends
     int lon1, lat1, lon2, lat2;
     // Circle definition

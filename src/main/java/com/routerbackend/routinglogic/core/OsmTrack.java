@@ -34,23 +34,6 @@ public class OsmTrack {
     nodes.add(0, node);
   }
 
-  public void registerDetourForId(long id, OsmPathElement detour) {
-    if (detourMap == null) {
-      detourMap = new CompactLongMap<>();
-    }
-    OsmPathElementHolder nh = new OsmPathElementHolder();
-    nh.node = detour;
-    OsmPathElementHolder h = detourMap.get(id);
-    if (h != null) {
-      while (h.nextHolder != null) {
-        h = h.nextHolder;
-      }
-      h.nextHolder = nh;
-    } else {
-      detourMap.fastPut(id, nh);
-    }
-  }
-
   public void copyDetours(OsmTrack source) {
     detourMap = source.detourMap == null ? null : new FrozenLongMap<>(source.detourMap);
   }

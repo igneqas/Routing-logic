@@ -7,7 +7,6 @@ package com.routerbackend.routinglogic.mapaccess;
 
 import com.routerbackend.routinglogic.core.OsmLink;
 import com.routerbackend.routinglogic.core.OsmNode;
-import com.routerbackend.routinglogic.utils.ByteArrayUnifier;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,24 +17,17 @@ import static com.routerbackend.Constants.MEMORY_CLASS;
 
 public final class OsmNodesMap {
   private Map<OsmNode, OsmNode> hmap = new HashMap<OsmNode, OsmNode>(4096);
-
-  private ByteArrayUnifier abUnifier = new ByteArrayUnifier(16384, false);
-
   private OsmNode testKey = new OsmNode();
-
   public int nodesCreated;
   public long maxMemory = (2L * (MEMORY_CLASS * 1024L * 1024L)) / 3L;
   private long currentmaxmem = 4000000; // start with 4 MB
   public int lastVisitID = 1000;
   public int baseID = 1000;
-
   public OsmNode destination;
   public int currentPathCost;
   public int currentMaxCost = 1000000000;
-
   public OsmNode endNode1;
   public OsmNode endNode2;
-
   public int cleanupMode = 0;
 
   public void cleanupAndCount(OsmNode[] nodes) {
@@ -204,11 +196,6 @@ public final class OsmNodesMap {
     }
   }
 
-
-  public ByteArrayUnifier getByteArrayUnifier() {
-    return abUnifier;
-  }
-
   public OsmNode get(int ilon, int ilat) {
     testKey.longitude = ilon;
     testKey.latitude = ilat;
@@ -225,47 +212,4 @@ public final class OsmNodesMap {
   public OsmNode put(OsmNode node) {
     return hmap.put(node, node);
   }
-
-  // ********************** test cleanup **********************
-
-  private static void addLinks(OsmNode[] nodes, int idx, boolean isBorder, int[] links) {
-    OsmNode n = nodes[idx];
-    n.visitID = isBorder ? 1 : 0;
-    n.elevation = (short) idx;
-    for (int i : links) {
-      OsmNode t = nodes[i];
-      OsmLink link = n.isLinkUnused() ? n : (t.isLinkUnused() ? t : null);
-      if (link == null) {
-        link = new OsmLink();
-      }
-      n.addLink(link, false, t);
-    }
-  }
-
-  public static void main(String[] args) {
-    OsmNode[] nodes = new OsmNode[12];
-    for (int i = 0; i < nodes.length; i++) {
-      nodes[i] = new OsmNode((i + 1000) * 1000, (i + 1000) * 1000);
-
-    }
-
-    addLinks(nodes, 0, true, new int[]{1, 5});  // 0
-    addLinks(nodes, 1, true, new int[]{});  // 1
-    addLinks(nodes, 2, false, new int[]{3, 4});  // 2
-    addLinks(nodes, 3, false, new int[]{4});  // 3
-    addLinks(nodes, 4, false, new int[]{});  // 4
-    addLinks(nodes, 5, true, new int[]{6, 9});  // 5
-    addLinks(nodes, 6, false, new int[]{7, 8});  // 6
-    addLinks(nodes, 7, false, new int[]{});  // 7
-    addLinks(nodes, 8, false, new int[]{});  // 8
-    addLinks(nodes, 9, false, new int[]{10, 11});  // 9
-    addLinks(nodes, 10, false, new int[]{11});  // 10
-    addLinks(nodes, 11, false, new int[]{});  // 11
-
-    OsmNodesMap nm = new OsmNodesMap();
-    nm.cleanupMode = 2;
-    nm.cleanupAndCount(nodes);
-    nm.cleanupAndCount(nodes);
-  }
-
 }

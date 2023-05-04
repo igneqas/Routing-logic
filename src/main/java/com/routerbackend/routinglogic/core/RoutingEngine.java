@@ -25,7 +25,6 @@ public class RoutingEngine {
   public double airDistanceCostFactor;
   private OsmTrack guideTrack;
   private OsmPathElement matchPath;
-
   private long startTime;
 
   public RoutingEngine(List<OsmNodeNamed> waypoints, RoutingContext routingContext) {
@@ -658,13 +657,6 @@ public class RoutingEngine {
             OsmPathElement guideNode = guideTrack.nodes.get(gidx);
             long nextId = nextNode.getIdFromPos();
             if (nextId != guideNode.getIdFromPos()) {
-              // not along the guide-track, discard, but register for voice-hint processing
-              if (routingContext.turnInstructionMode > 0) {
-                OsmPath detour = routingContext.createPath(path, link, refTrack, true);
-                if (detour.cost >= 0. && nextId != startNodeId1 && nextId != startNodeId2) {
-                  guideTrack.registerDetourForId(currentNode.getIdFromPos(), OsmPathElement.create(detour));
-                }
-              }
               continue;
             }
           }

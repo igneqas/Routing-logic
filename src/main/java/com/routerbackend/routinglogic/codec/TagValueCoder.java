@@ -25,22 +25,22 @@ public final class TagValueCoder {
     return (TagValueWrapper) node;
   }
 
-  public TagValueCoder(BitCoderContext bc, DataBuffers buffers, TagValueValidator validator) {
-    tree = decodeTree(bc, buffers, validator);
+  public TagValueCoder(BitCoderContext bc, TagValueValidator validator) {
+    tree = decodeTree(bc, validator);
     this.bc = bc;
   }
 
-  private Object decodeTree(BitCoderContext bc, DataBuffers buffers, TagValueValidator validator) {
+  private Object decodeTree(BitCoderContext bc, TagValueValidator validator) {
     boolean isNode = bc.decodeBit();
     if (isNode) {
       TreeNode node = new TreeNode();
-      node.child1 = decodeTree(bc, buffers, validator);
-      node.child2 = decodeTree(bc, buffers, validator);
+      node.child1 = decodeTree(bc, validator);
+      node.child2 = decodeTree(bc, validator);
       return node;
     }
 
-    byte[] buffer = buffers.tagbuf1;
-    BitCoderContext ctx = buffers.bctx1;
+    byte[] buffer = new byte[256];
+    BitCoderContext ctx = new BitCoderContext(new byte[256]);
     ctx.reset(buffer);
 
     int inum = 0;

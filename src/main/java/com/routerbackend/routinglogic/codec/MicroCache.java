@@ -32,8 +32,6 @@ public class MicroCache extends ByteDataWriter {
   public boolean virgin = true;
   public boolean ghost = false;
 
-  public static boolean debug = false;
-
   protected MicroCache(byte[] ab) {
     super(ab);
   }
@@ -45,7 +43,7 @@ public class MicroCache extends ByteDataWriter {
   }
 
   public static MicroCache emptyCache() {
-    return new MicroCache(null); // TODO: singleton?
+    return new MicroCache(null);
   }
 
   protected void init(int size) {
@@ -63,52 +61,6 @@ public class MicroCache extends ByteDataWriter {
 
   public final int getDataSize() {
     return ab == null ? 0 : ab.length;
-  }
-
-  /**
-   * Set the internal reader (aboffset, aboffsetEnd) to the body data for the given id
-   * <p>
-   * If a node is not found in an empty cache, this is usually an edge-effect
-   * (data-file does not exist or neighboured data-files of differnt age),
-   * but is can as well be a symptom of a node-identity breaking bug.
-   * <p>
-   * Current implementation always returns false for not-found, however, for
-   * regression testing, at least for the case that is most likely a bug
-   * (node found but marked as deleted = ready for garbage collection
-   * = already consumed) the RunException should be re-enabled
-   *
-   * @return true if id was found
-   */
-  public final boolean getAndClear(long id64) {
-    if (size == 0) {
-      return false;
-    }
-    int id = shrinkId(id64);
-    int[] a = faid;
-    int offset = p2size;
-    int n = 0;
-
-    while (offset > 0) {
-      int nn = n + offset;
-      if (nn < size && a[nn] <= id) {
-        n = nn;
-      }
-      offset >>= 1;
-    }
-    if (a[n] == id) {
-      if ((fapos[n] & 0x80000000) == 0) {
-        aboffset = startPos(n);
-        aboffsetEnd = fapos[n];
-        fapos[n] |= 0x80000000; // mark deleted
-        delbytes += aboffsetEnd - aboffset;
-        delcount++;
-        return true;
-      } else // .. marked as deleted
-      {
-        // throw new RuntimeException( "MicroCache: node already consumed: id=" + id );
-      }
-    }
-    return false;
   }
 
   protected final int startPos(int n) {
@@ -162,23 +114,5 @@ public class MicroCache extends ByteDataWriter {
     for (int i = 0; i < size; i++) {
       fapos[i] &= 0x7fffffff; // clear deleted flags
     }
-  }
-
-  /**
-   * expand a 32-bit micro-cache-internal id into a 64-bit (lon|lat) global-id
-   *
-   * @see #shrinkId
-   */
-  public long expandId(int id32) {
-    throw new IllegalArgumentException("expandId for empty cache");
-  }
-
-  /**
-   * shrink a 64-bit (lon|lat) global-id into a a 32-bit micro-cache-internal id
-   *
-   * @see #expandId
-   */
-  public int shrinkId(long id64) {
-    throw new IllegalArgumentException("shrinkId for empty cache");
   }
 }

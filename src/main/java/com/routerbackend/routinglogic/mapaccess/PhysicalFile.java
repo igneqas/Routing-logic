@@ -5,7 +5,6 @@
  */
 package com.routerbackend.routinglogic.mapaccess;
 
-import com.routerbackend.routinglogic.codec.DataBuffers;
 import com.routerbackend.routinglogic.utils.ByteDataReader;
 import com.routerbackend.routinglogic.utils.Crc32;
 
@@ -21,9 +20,9 @@ public final class PhysicalFile {
   String fileName;
   public int divisor = 80;
 
-  public PhysicalFile(File f, DataBuffers dataBuffers, int lookupVersion) throws IOException {
+  public PhysicalFile(File f, int lookupVersion) throws IOException {
     fileName = f.getName();
-    byte[] iobuffer = dataBuffers.iobuffer;
+    byte[] iobuffer = new byte[65636];
     ra = new RandomAccessFile(f, "r");
     ra.readFully(iobuffer, 0, 200);
     int fileIndexCrc = Crc32.crc(iobuffer, 0, 200);

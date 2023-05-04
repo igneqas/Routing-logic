@@ -6,12 +6,9 @@
 package com.routerbackend.routinglogic.core;
 
 import com.routerbackend.routinglogic.codec.MicroCache;
-import com.routerbackend.routinglogic.codec.MicroCache2;
 import com.routerbackend.routinglogic.mapaccess.OsmNodesMap;
 import com.routerbackend.routinglogic.mapaccess.TurnRestriction;
 import com.routerbackend.routinglogic.utils.CheapRuler;
-import com.routerbackend.routinglogic.utils.IByteArrayUnifier;
-import com.routerbackend.routinglogic.utils.ByteArrayUnifier;
 
 public class OsmNode extends OsmLink implements OsmPos
 {
@@ -36,12 +33,6 @@ public class OsmNode extends OsmLink implements OsmPos
     this.longitude = longitude;
     this.latitude = latitude;
   }
-
-  public OsmNode(long id) {
-    longitude = (int) (id >> 32);
-    latitude = (int) (id);
-  }
-
 
   // interface OsmPos
   public final int getILat() {
@@ -87,51 +78,6 @@ public class OsmNode extends OsmLink implements OsmPos
 
   public String toString() {
     return "n_" + (longitude - 180000000) + "_" + (latitude - 90000000);
-  }
-
-  public final void parseNodeBody(MicroCache mc, OsmNodesMap hollowNodes, IByteArrayUnifier expCtxWay) {
-    if (mc instanceof MicroCache2) {
-      parseNodeBody2((MicroCache2) mc, hollowNodes, expCtxWay);
-    } else
-      throw new IllegalArgumentException("unknown cache version: " + mc.getClass());
-  }
-
-  public final void parseNodeBody2(MicroCache2 mc, OsmNodesMap hollowNodes, IByteArrayUnifier expCtxWay) {
-    ByteArrayUnifier abUnifier = hollowNodes.getByteArrayUnifier();
-
-    // read turn restrictions
-    while (mc.readBoolean()) {
-      TurnRestriction tr = new TurnRestriction();
-      tr.exceptions = mc.readShort();
-      tr.isPositive = mc.readBoolean();
-      tr.fromLon = mc.readInt();
-      tr.fromLat = mc.readInt();
-      tr.toLon = mc.readInt();
-      tr.toLat = mc.readInt();
-      addTurnRestriction(tr);
-    }
-
-    elevation = mc.readShort();
-    int nodeDescSize = mc.readVarLengthUnsigned();
-    nodeDescription = nodeDescSize == 0 ? null : mc.readUnified(nodeDescSize, abUnifier);
-
-    while (mc.hasMoreData()) {
-      // read link data
-      int endPointer = mc.getEndPointer();
-      int linklon = longitude + mc.readVarLengthSigned();
-      int linklat = latitude + mc.readVarLengthSigned();
-      int sizecode = mc.readVarLengthUnsigned();
-      boolean isReverse = (sizecode & 1) != 0;
-      byte[] description = null;
-      int descSize = sizecode >> 1;
-      if (descSize > 0) {
-        description = mc.readUnified(descSize, expCtxWay);
-      }
-      byte[] geometry = mc.readDataUntil(endPointer);
-
-      addLink(linklon, linklat, description, geometry, hollowNodes, isReverse);
-    }
-    hollowNodes.remove(this);
   }
 
   public void addLink(int linklon, int linklat, byte[] description, byte[] geometry, OsmNodesMap hollowNodes, boolean isReverse) {

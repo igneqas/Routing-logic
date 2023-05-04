@@ -5,7 +5,6 @@
  */
 package com.routerbackend.routinglogic.mapaccess;
 
-import com.routerbackend.routinglogic.codec.DataBuffers;
 import com.routerbackend.routinglogic.codec.MicroCache;
 import com.routerbackend.routinglogic.codec.WaypointMatcher;
 import com.routerbackend.routinglogic.core.OsmLink;
@@ -22,19 +21,13 @@ import static com.routerbackend.Constants.MEMORY_CLASS;
 
 public final class NodesCache {
   private File segmentDir = new File("src/main/java/com/data/segments");
-
   public OsmNodesMap nodesMap;
   private BExpressionContextWay expCtxWay;
   private int lookupVersion;
   private String currentFileName;
-
   private Map<String, PhysicalFile> fileCache;
-  private DataBuffers dataBuffers;
-
   private OsmFile[][] mapFiles;
-
   public WaypointMatcher waypointMatcher;
-
   public boolean first_file_access_failed;
   public String first_file_access_name;
 
@@ -60,7 +53,6 @@ public final class NodesCache {
 
     if (oldCache != null) {
       fileCache = oldCache.fileCache;
-      dataBuffers = oldCache.dataBuffers;
 
       // re-use old, virgin caches (if same detail-mode)
       if (oldCache.detailed == detailed) {
@@ -78,7 +70,6 @@ public final class NodesCache {
     } else {
       fileCache = new HashMap<>(4);
       mapFiles = new OsmFile[180][];
-      dataBuffers = new DataBuffers();
     }
   }
 
@@ -157,7 +148,7 @@ public final class NodesCache {
       MicroCache segment = osmf.getMicroCache(ilon, ilat);
       if (segment == null) {
         checkEnableCacheCleaning();
-        segment = osmf.createMicroCache(ilon, ilat, dataBuffers, expCtxWay, waypointMatcher, nodesMap);
+        segment = osmf.createMicroCache(ilon, ilat, expCtxWay, waypointMatcher, nodesMap);
 
         cacheSum += segment.getDataSize();
       } else if (segment.ghost) {
@@ -190,11 +181,6 @@ public final class NodesCache {
     }
     if (!node.isHollow()) {
       return true; // direct weaving...
-    }
-
-    long id = node.getIdFromPos();
-    if (segment.getAndClear(id)) {
-      node.parseNodeBody(segment, nodesMap, expCtxWay);
     }
 
     if (garbageCollectionEnabled) // garbage collection
@@ -290,12 +276,12 @@ public final class NodesCache {
         }
       if (f != null) {
         currentFileName = f.getName();
-        ra = new PhysicalFile(f, dataBuffers, lookupVersion);
+        ra = new PhysicalFile(f, lookupVersion);
       }
       fileCache.put(filenameBase, ra);
     }
     ra = fileCache.get(filenameBase);
-    OsmFile osmf = new OsmFile(ra, lonDegree, latDegree, dataBuffers);
+    OsmFile osmf = new OsmFile(ra, lonDegree, latDegree);
 
     if (first_file_access_name == null) {
       first_file_access_name = currentFileName;
