@@ -32,6 +32,7 @@ public class Converter {
         JSONArray ja = new JSONArray();
         routes.forEach(route -> {
             JSONObject jo = new JSONObject();
+            jo.put("id", route.get_id());
             jo.put("name", route.getName());
             jo.put("dateCreated", DateFormatter.formatDate(route.getDateCreated()));
             jo.put("distance", route.getLength());
