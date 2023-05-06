@@ -172,7 +172,7 @@ public class RoutingEngine {
         return tryFindTrack(refTracks, lastTracks);
       } catch (RoutingIslandException rie) {
         islandNodePairs.freezeTempPairs();
-        nodesCache.clean(true);
+        nodesCache.clean();
         matchedWaypoints = null;
       }
     }
@@ -426,7 +426,7 @@ public class RoutingEngine {
       nodesCache.nodesMap.cleanupMode = detailed ? 0 : (routingContext.considerTurnRestrictions ? 2 : 1);
       return _findTrack(operationName, startWp, endWp, costCuttingTrack, refTrack);
     } finally {
-      nodesCache.clean(false); // clean only non-virgin caches
+      nodesCache.clean(); // clean only non-virgin caches
     }
   }
 

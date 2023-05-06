@@ -5,11 +5,11 @@
  */
 package com.routerbackend.routinglogic.mapaccess;
 
-import com.routerbackend.routinglogic.codec.MicroCache;
 import com.routerbackend.routinglogic.codec.WaypointMatcher;
 import com.routerbackend.routinglogic.core.OsmLink;
 import com.routerbackend.routinglogic.core.OsmNode;
 import com.routerbackend.routinglogic.expressions.BExpressionContextWay;
+import com.routerbackend.routinglogic.utils.ByteDataWriter;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,12 +65,12 @@ public final class NodesCache {
     }
   }
 
-  public void clean(boolean all) {
+  public void clean() {
     for (OsmFile[] mapFile : mapFiles) {
       if (mapFile == null)
         continue;
       for (OsmFile osmFile : mapFile) {
-        osmFile.clean(all);
+        osmFile.clean();
       }
     }
   }
@@ -79,7 +79,7 @@ public final class NodesCache {
     getSegmentFor(ilon, ilat);
   }
 
-  public MicroCache getSegmentFor(int ilon, int ilat) {
+  public ByteDataWriter getSegmentFor(int ilon, int ilat) {
     try {
       int lonDegree = ilon / 1000000;
       int latDegree = ilat / 1000000;
@@ -107,7 +107,7 @@ public final class NodesCache {
         return null;
       }
 
-      MicroCache segment = osmf.getMicroCache(ilon, ilat);
+      ByteDataWriter segment = osmf.getMicroCache(ilon, ilat);
       if (segment == null) {
         segment = osmf.createMicroCache(ilon, ilat, expCtxWay, waypointMatcher, nodesMap);
       }
@@ -132,7 +132,7 @@ public final class NodesCache {
     if (!node.isHollow())
       return true;
 
-    MicroCache segment = getSegmentFor(node.longitude, node.latitude);
+    ByteDataWriter segment = getSegmentFor(node.longitude, node.latitude);
     if (segment == null) {
       return false;
     }

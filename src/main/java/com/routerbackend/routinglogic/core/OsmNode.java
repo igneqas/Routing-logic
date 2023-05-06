@@ -5,7 +5,6 @@
  */
 package com.routerbackend.routinglogic.core;
 
-import com.routerbackend.routinglogic.codec.MicroCache;
 import com.routerbackend.routinglogic.mapaccess.OsmNodesMap;
 import com.routerbackend.routinglogic.mapaccess.TurnRestriction;
 import com.routerbackend.routinglogic.utils.CheapRuler;

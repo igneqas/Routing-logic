@@ -7,6 +7,7 @@ package com.routerbackend.routinglogic.mapaccess;
 
 import com.routerbackend.routinglogic.codec.*;
 import com.routerbackend.routinglogic.utils.ByteDataReader;
+import com.routerbackend.routinglogic.utils.ByteDataWriter;
 import com.routerbackend.routinglogic.utils.Crc32;
 
 import java.io.IOException;
@@ -16,7 +17,7 @@ final class OsmFile {
   private RandomAccessFile is = null;
   private long fileOffset;
   private int[] posIdx;
-  private MicroCache[] microCaches;
+  private ByteDataWriter[] microCaches;
   public int lonDegree;
   public int latDegree;
   public String filename;
@@ -49,7 +50,7 @@ final class OsmFile {
 
       is = rafile.ra;
       posIdx = new int[ncaches];
-      microCaches = new MicroCache[ncaches];
+      microCaches = new ByteDataWriter[ncaches];
       is.seek(fileOffset);
       is.readFully(iobuffer, 0, indexsize);
 
@@ -71,18 +72,18 @@ final class OsmFile {
     return microCaches != null;
   }
 
-  public MicroCache getMicroCache(int ilon, int ilat) {
+  public ByteDataWriter getMicroCache(int ilon, int ilat) {
     int lonIdx = ilon / cellsize;
     int latIdx = ilat / cellsize;
     int subIdx = (latIdx - divisor * latDegree) * divisor + (lonIdx - divisor * lonDegree);
     return microCaches[subIdx];
   }
 
-  public MicroCache createMicroCache(int ilon, int ilat, TagValueValidator wayValidator, WaypointMatcher waypointMatcher, OsmNodesMap hollowNodes)
+  public ByteDataWriter createMicroCache(int ilon, int ilat, TagValueValidator wayValidator, WaypointMatcher waypointMatcher, OsmNodesMap hollowNodes)
     throws Exception {
     int lonIdx = ilon / cellsize;
     int latIdx = ilat / cellsize;
-    MicroCache segment = createMicroCache(lonIdx, latIdx, wayValidator, waypointMatcher, true, hollowNodes);
+    ByteDataWriter segment = createMicroCache(lonIdx, latIdx, wayValidator, waypointMatcher, true, hollowNodes);
     int subIdx = (latIdx - divisor * latDegree) * divisor + (lonIdx - divisor * lonDegree);
     microCaches[subIdx] = segment;
     return segment;
@@ -106,7 +107,7 @@ final class OsmFile {
     return size;
   }
 
-  public MicroCache createMicroCache(int lonIdx, int latIdx, TagValueValidator wayValidator,
+  public ByteDataWriter createMicroCache(int lonIdx, int latIdx, TagValueValidator wayValidator,
                                      WaypointMatcher waypointMatcher, boolean reallyDecode, OsmNodesMap hollowNodes) throws IOException {
     int subIdx = (latIdx - divisor * latDegree) * divisor + (lonIdx - divisor * lonDegree);
 
@@ -125,7 +126,7 @@ final class OsmFile {
         return null;
       }
       new DirectWeaver(bc, lonIdx, latIdx, divisor, wayValidator, waypointMatcher, hollowNodes);
-      return new MicroCache(null);
+      return new ByteDataWriter(null);
     } finally {
       // crc check only if the buffer has not been fully read
       int readBytes = (bc.getReadingBitPosition() + 7) >> 3;
@@ -145,7 +146,7 @@ final class OsmFile {
   void setGhostState() {
     int nc = microCaches == null ? 0 : microCaches.length;
     for (int i = 0; i < nc; i++) {
-      MicroCache mc = microCaches[i];
+      ByteDataWriter mc = microCaches[i];
       if (mc == null)
         continue;
 
@@ -153,10 +154,10 @@ final class OsmFile {
     }
   }
 
-  void clean(boolean all) {
+  void clean() {
     int microCachesSize = microCaches == null ? 0 : microCaches.length;
     for (int i = 0; i < microCachesSize; i++) {
-      MicroCache mc = microCaches[i];
+      ByteDataWriter mc = microCaches[i];
       if (mc == null)
         continue;
       microCaches[i] = null;
