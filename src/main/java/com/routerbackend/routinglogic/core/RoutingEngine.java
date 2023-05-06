@@ -753,10 +753,6 @@ public class RoutingEngine {
     track.distance = distance;
     track.buildMap();
 
-    // for final track..
-    if (guideTrack != null) {
-      track.copyDetours(guideTrack);
-    }
     return track;
   }
 

@@ -17,8 +17,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.routerbackend.Constants.MEMORY_CLASS;
-
 public final class NodesCache {
   private File segmentDir = new File("src/main/java/com/data/segments");
   public OsmNodesMap nodesMap;
@@ -30,13 +28,7 @@ public final class NodesCache {
   public WaypointMatcher waypointMatcher;
   public boolean first_file_access_failed;
   public String first_file_access_name;
-
-  private long cacheSum = 0;
-  private long maxmemtiles = (MEMORY_CLASS * 1024L * 1024L) / 8;
   private boolean detailed; // NOPMD used in constructor
-
-  private boolean garbageCollectionEnabled = false;
-  private boolean ghostCleaningDone = false;
 
   public NodesCache(BExpressionContextWay ctxWay, NodesCache oldCache, boolean detailed) {
     this.nodesMap = new OsmNodesMap();
@@ -61,7 +53,7 @@ public final class NodesCache {
           if (fileRow == null)
             continue;
           for (OsmFile osmf : fileRow) {
-            cacheSum += osmf.setGhostState();
+            osmf.setGhostState();
           }
         }
       } else {
@@ -83,38 +75,8 @@ public final class NodesCache {
     }
   }
 
-  // if the cache sum exceeded a threshold,
-  // clean all ghosts and enable garbage collection
-  private void checkEnableCacheCleaning() {
-    if (cacheSum < maxmemtiles) {
-      return;
-    }
-
-    for (int i = 0; i < mapFiles.length; i++) {
-      OsmFile[] fileRow = mapFiles[i];
-      if (fileRow == null) {
-        continue;
-      }
-      for (OsmFile osmf : fileRow) {
-        if (garbageCollectionEnabled && !ghostCleaningDone) {
-          cacheSum -= osmf.cleanGhosts();
-        } else {
-          cacheSum -= osmf.collectAll();
-        }
-      }
-    }
-
-    if (garbageCollectionEnabled) {
-      ghostCleaningDone = true;
-      maxmemtiles *= 2;
-    } else {
-      garbageCollectionEnabled = true;
-    }
-  }
-
-  public int loadSegmentFor(int ilon, int ilat) {
-    MicroCache mc = getSegmentFor(ilon, ilat);
-    return mc == null ? 0 : mc.getSize();
+  public void loadSegmentFor(int ilon, int ilat) {
+    getSegmentFor(ilon, ilat);
   }
 
   public MicroCache getSegmentFor(int ilon, int ilat) {
@@ -147,12 +109,7 @@ public final class NodesCache {
 
       MicroCache segment = osmf.getMicroCache(ilon, ilat);
       if (segment == null) {
-        checkEnableCacheCleaning();
         segment = osmf.createMicroCache(ilon, ilat, expCtxWay, waypointMatcher, nodesMap);
-
-        cacheSum += segment.getDataSize();
-      } else if (segment.ghost) {
-        segment.unGhost();
       }
       return segment;
     } catch (IOException re) {
@@ -181,11 +138,6 @@ public final class NodesCache {
     }
     if (!node.isHollow()) {
       return true; // direct weaving...
-    }
-
-    if (garbageCollectionEnabled) // garbage collection
-    {
-      cacheSum -= segment.collect(segment.getSize() >> 1); // threshold = 1/2 of size is deleted
     }
 
     return !node.isHollow();

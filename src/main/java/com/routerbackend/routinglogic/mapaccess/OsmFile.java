@@ -15,15 +15,11 @@ import java.io.RandomAccessFile;
 final class OsmFile {
   private RandomAccessFile is = null;
   private long fileOffset;
-
   private int[] posIdx;
   private MicroCache[] microCaches;
-
   public int lonDegree;
   public int latDegree;
-
   public String filename;
-
   private int divisor;
   private int cellsize;
   private int ncaches;
@@ -117,9 +113,6 @@ final class OsmFile {
     byte[] ab = new byte[65636];
     int asize = getDataInputForSubIdx(subIdx, ab);
 
-    if (asize == 0) {
-      return MicroCache.emptyCache();
-    }
     if (asize > ab.length) {
       ab = new byte[asize];
       asize = getDataInputForSubIdx(subIdx, ab);
@@ -132,7 +125,7 @@ final class OsmFile {
         return null;
       }
       new DirectWeaver(bc, lonIdx, latIdx, divisor, wayValidator, waypointMatcher, hollowNodes);
-      return MicroCache.emptyNonVirgin;
+      return new MicroCache(null);
     } finally {
       // crc check only if the buffer has not been fully read
       int readBytes = (bc.getReadingBitPosition() + 7) >> 3;
@@ -149,49 +142,15 @@ final class OsmFile {
   }
 
   // set this OsmFile to ghost-state:
-  long setGhostState() {
-    long sum = 0;
+  void setGhostState() {
     int nc = microCaches == null ? 0 : microCaches.length;
     for (int i = 0; i < nc; i++) {
       MicroCache mc = microCaches[i];
       if (mc == null)
         continue;
-      if (mc.virgin) {
-        mc.ghost = true;
-        sum += mc.getDataSize();
-      } else {
-        microCaches[i] = null;
-      }
-    }
-    return sum;
-  }
 
-  long collectAll() {
-    long deleted = 0;
-    int nc = microCaches == null ? 0 : microCaches.length;
-    for (int i = 0; i < nc; i++) {
-      MicroCache mc = microCaches[i];
-      if (mc == null)
-        continue;
-      if (!mc.ghost) {
-        deleted += mc.collect(0);
-      }
+      microCaches[i] = null;
     }
-    return deleted;
-  }
-
-  long cleanGhosts() {
-    long deleted = 0;
-    int nc = microCaches == null ? 0 : microCaches.length;
-    for (int i = 0; i < nc; i++) {
-      MicroCache mc = microCaches[i];
-      if (mc == null)
-        continue;
-      if (mc.ghost) {
-        microCaches[i] = null;
-      }
-    }
-    return deleted;
   }
 
   void clean(boolean all) {
@@ -200,9 +159,7 @@ final class OsmFile {
       MicroCache mc = microCaches[i];
       if (mc == null)
         continue;
-      if (all || !mc.virgin) {
-        microCaches[i] = null;
-      }
+      microCaches[i] = null;
     }
   }
 }

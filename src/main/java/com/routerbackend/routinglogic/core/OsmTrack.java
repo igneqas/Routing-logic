@@ -26,38 +26,10 @@ public class OsmTrack {
 
   private CompactLongMap<OsmPathElementHolder> nodesMap;
 
-  private CompactLongMap<OsmPathElementHolder> detourMap;
-
   public String name = "unset";
 
   public void addNode(OsmPathElement node) {
     nodes.add(0, node);
-  }
-
-  public void copyDetours(OsmTrack source) {
-    detourMap = source.detourMap == null ? null : new FrozenLongMap<>(source.detourMap);
-  }
-
-  public void addDetours(OsmTrack source) {
-    if (detourMap != null) {
-      CompactLongMap<OsmPathElementHolder> tmpDetourMap = new CompactLongMap<>();
-      long[] oldIdList = ((FrozenLongMap<?>) detourMap).getKeyArray();
-      for (long id : oldIdList) {
-        OsmPathElementHolder v = detourMap.get(id);
-        tmpDetourMap.put(id, v);
-      }
-
-      if (source.detourMap != null) {
-        long[] idList = ((FrozenLongMap<?>) source.detourMap).getKeyArray();
-        for (long id : idList) {
-          OsmPathElementHolder v = source.detourMap.get(id);
-          if (!tmpDetourMap.contains(id) && source.nodesMap.contains(id)) {
-            tmpDetourMap.put(id, v);
-          }
-        }
-      }
-      detourMap = new FrozenLongMap<>(tmpDetourMap);
-    }
   }
 
   public void buildMap() {
@@ -117,12 +89,6 @@ public class OsmTrack {
         e.setEnergy(e.getEnergy() + e0);
         nodes.add(e);
       }
-    }
-
-    if (detourMap == null) {
-      detourMap = t.detourMap;
-    } else {
-      addDetours(t);
     }
 
     distance += t.distance;
