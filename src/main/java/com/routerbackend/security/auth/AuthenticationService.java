@@ -30,6 +30,12 @@ public class AuthenticationService {
     @Autowired
     AuthenticationManager authenticationManager;
 
+    public boolean checkIfUserExists(String email) {
+        if(repository.findByEmail(email).isPresent())
+            return true;
+        return false;
+    }
+
     public AuthenticationResponse register(RegisterRequest request) {
         var password = passwordEncoder.encode(request.getPassword());
         UserDTO user = new UserDTO(request.getUsername(), request.getEmail(), password);

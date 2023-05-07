@@ -3,6 +3,7 @@ package com.routerbackend.security.auth;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +21,8 @@ public class AuthenticationController {
     public ResponseEntity<String> register(
             @RequestBody RegisterRequest request
     ) {
+        if(service.checkIfUserExists(request.getEmail()))
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
         return ResponseEntity.ok(service.register(request).toString());
     }
 
