@@ -18,7 +18,6 @@ public class RouteRequestParser {
     routingContext.setAlternativeIdx(alternativeIdx != null ? Integer.parseInt(alternativeIdx) : 0);
 
     if(Objects.equals(profile, "pollution-free")) {
-      routingContext.setProfileName("safety");
       String rawNoGoData = PollutionDataHandler.getPollutionData();
       rawNoGoData += TrafficDataHandler.getTrafficData();
 //      System.out.println(rawNoGoData);
