@@ -32,6 +32,8 @@ public class SecurityConfig {
                 .permitAll()
                 .requestMatchers("/route/generate")
                 .permitAll()
+                .requestMatchers("/route/suggestions")
+                .permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()

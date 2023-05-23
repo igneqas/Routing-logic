@@ -91,9 +91,9 @@ public class RoutingContext {
 
   public void checkMatchedWaypointAgainstNoGos(List<MatchedWaypoint> matchedWaypoints) {
     if (noGoPoints == null) return;
-    List<MatchedWaypoint> newMatchedWaypoints = new ArrayList<>(matchedWaypoints);
-    if (newMatchedWaypoints.size() < 2) {
-      throw new IllegalArgumentException("a waypoint is in a restricted area ");
+    for (MatchedWaypoint mwp : matchedWaypoints) {
+      OsmNode wp = mwp.crosspoint;
+      noGoPoints.removeIf(noGo -> wp.calcDistance(noGo) < noGo.radius);
     }
   }
 

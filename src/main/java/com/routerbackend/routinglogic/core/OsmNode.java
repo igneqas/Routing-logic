@@ -118,6 +118,10 @@ public class OsmNode extends OsmLink implements OsmPos
     }
   }
 
+  public final int calcDistance(OsmPos p) {
+    return (int) Math.max(1.0, Math.round(CheapRuler.distance(longitude, latitude, p.getILon(), p.getILat())));
+  }
+
 
   public final boolean isHollow() {
     return elevation == -12345;

@@ -1,5 +1,6 @@
 package com.routerbackend.controllers;
 
+import com.routerbackend.controllers.utils.DistanceCalculator;
 import com.routerbackend.dtos.RouteDTO;
 import com.routerbackend.dtos.UserDTO;
 import com.routerbackend.dtos.utils.Coordinates;
@@ -19,10 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static com.routerbackend.dtos.utils.Converter.JsonToCoordinates;
 import static com.routerbackend.dtos.utils.Converter.RoutesToJson;
@@ -116,5 +114,27 @@ public class RouteController {
     public ResponseEntity<String> deleteRoute(@RequestParam("id") String id){
         routeRepository.deleteById(id);
         return new ResponseEntity<>("", HttpStatus.OK);
+    }
+
+    @GetMapping("/suggestions")
+    @CrossOrigin(origins = "http://localhost:3000")
+    public ResponseEntity<String> getSuggestions (@RequestParam(value="profile", required = false) String profile, @RequestParam(value="lonlats", required = false) String lonLats) {
+        if(profile == null || profile.isEmpty())
+            return new ResponseEntity<>("Provide a profile.", HttpStatus.BAD_REQUEST);
+        if(lonLats == null || lonLats.isEmpty())
+            return new ResponseEntity<>("Provide coordinates.", HttpStatus.BAD_REQUEST);
+
+        String[] coordinates = lonLats.split("\\;");
+        String[] startCoordinates = coordinates[0].split(",");
+        String[] finishCoordinates = coordinates[1].split(",");
+        List<RouteDTO> routes = routeRepository.findByTripType(profile);
+        List<RouteDTO> filteredRoutes = routes.stream().filter(route -> DistanceCalculator.isWithin300Meters(route.getCoordinates().get(0), startCoordinates) &&
+                DistanceCalculator.isWithin300Meters(route.getCoordinates().get(route.getCoordinates().size() - 1), finishCoordinates)).toList();
+
+        if(filteredRoutes.size() <= 5)
+            return new ResponseEntity<>(RoutesToJson(filteredRoutes).toString(), HttpStatus.OK);
+
+        Collections.shuffle(filteredRoutes);
+        return new ResponseEntity<>(RoutesToJson(filteredRoutes.subList(0, 5)).toString(), HttpStatus.OK);
     }
 }

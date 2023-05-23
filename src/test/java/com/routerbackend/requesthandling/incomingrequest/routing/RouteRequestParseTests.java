@@ -25,6 +25,6 @@ public class RouteRequestParseTests {
         //TODO: add mocks
         RoutingContext result = routeRequestParser.readRoutingContext("pollution-free", "0");
         Assert.assertEquals("pollution-free", result.getProfileName());
-        Assert.assertEquals(0, result.getAlternativeIndex(0, 2));
+        Assert.assertEquals(0, result.getAlternativeIdx(0, 2));
     }
 }
